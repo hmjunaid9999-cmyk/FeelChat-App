@@ -1,0 +1,3297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script>(function(){
+var W=window,P=parent;
+if(P===W){W.__loc=location;W.__go=function(u){location.href=u};return}
+function parse(u){try{var a=new URL(String(u),location.href);if(a.origin!==location.origin)return null;var m=/(?:^|\/)(index|profile|messages|notifications|quiz|live|video|radio)\.html$/.exec(a.pathname);if(m)return{p:m[1],q:a.search+a.hash};if(a.pathname==="/"||a.pathname==="")return{p:"index",q:a.search+a.hash}}catch(e){}return null}
+var MAP={home:"index",profile:"profile",messages:"messages",notifications:"notifications",quiz:"quiz",live:"live",video:"video",radio:"radio"};
+function pillOf(t){var el=t,n=0;while(el&&el.nodeType===1&&n<5){var tx=(el.textContent||"").trim().replace(/\s*\(\d+\)\s*$/,"").toLowerCase(),c=el.parentElement;if(MAP[tx]&&c&&c.children.length>=4){var ct=(c.textContent||"").toLowerCase();if(ct.indexOf("home")>=0&&ct.indexOf("profile")>=0)return MAP[tx]}el=c;n++}return null}
+
+var H=history,IS=[],cur=null,L={search:location.search,hash:location.hash,origin:location.origin,pathname:location.pathname,href:location.href};
+W.__loc=L;
+function up(u){if(u==null)return;u=String(u);if(u===location.href)return;var q=u.indexOf("?"),h=u.indexOf("#");L.search=q>=0?u.slice(q,h>q?h:undefined):"";L.hash=h>=0?u.slice(h):""}
+function vis(){try{return P.__vis(W)}catch(e){return false}}
+try{Object.defineProperty(H,"state",{get:function(){return cur},configurable:true})}catch(e){}
+try{Object.defineProperty(H,"length",{get:function(){return P.history.length},configurable:true})}catch(e){}
+H.pushState=function(s,t,u){IS.push({s:cur,q:L.search,h:L.hash});cur=s;up(u);if(vis()){try{P.__inPush(W)}catch(e){}}};
+H.replaceState=function(s,t,u){cur=s;up(u)};
+H.back=function(){if(vis()){try{P.history.back()}catch(e){}}};
+H.go=function(n){if(n<0)H.back()};
+W.__innerBack=function(){if(!IS.length)return;var p=IS.pop();cur=p.s;L.search=p.q;L.hash=p.h;W.dispatchEvent(new PopStateEvent("popstate",{state:cur}))};
+W.__go=function(u){var r=parse(u);if(r){P.__go8(r.p,r.q)}else{try{P.location.href=String(u)}catch(e){}}};
+document.addEventListener("click",function(e){if(e.defaultPrevented||e.metaKey||e.ctrlKey||e.shiftKey)return;var t=e.target;if(!t||!t.closest)return;var a=t.closest("a[href]");if(a){var h=a.getAttribute("href")||"";if(h.charAt(0)==="#"||/^(mailto:|tel:|javascript:)/i.test(h)||a.target==="_blank"||a.hasAttribute("download"))return;var r=parse(h);if(r){e.preventDefault();e.stopPropagation();P.__go8(r.p,r.q)}return}var p=pillOf(t);if(p){e.preventDefault();e.stopPropagation();P.__go8(p,"")}},true);
+})();</script>
+<meta charset="UTF-8">
+<script>try{var __t=localStorage.getItem("fcTheme")||localStorage.getItem("onuvutiTheme");if(__t==="light"||__t==="dark")document.documentElement.setAttribute("data-theme",__t);}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin><link rel="dns-prefetch" href="https://www.gstatic.com">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js" crossorigin><title>Fill Chat</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--primary-color:#ffffff;--bg-color:#000000;--card-color:#000000;--text-color:#ffffff;--surface:#000000;--line:rgba(255,255,255,0.3);--line2:rgba(255,255,255,0.3);--surface-active:rgba(255,255,255,0.18);--text-muted:#ffffff;--text-soft:#ffffff;--text-comment:#ffffff;--notice-bg:#000000;--reply-bg:#000000;--avatar-bg:#000000;--danger-color:#ffffff;--success-color:#ffffff;--notice-color:#ffffff;;--max-width:640px}html[data-theme="light"]{color-scheme:light;--primary-color:#000000;--bg-color:#ffffff;--card-color:#ffffff;--text-color:#000000;--surface:#ffffff;--line:rgba(0,0,0,0.3);--line2:rgba(0,0,0,0.3);--surface-active:rgba(0,0,0,0.12);--text-muted:#000000;--text-soft:#000000;--text-comment:#000000;--notice-bg:#ffffff;--reply-bg:#ffffff;--avatar-bg:#ffffff;--danger-color:#000000;--success-color:#000000;--notice-color:#000000}
+html,body{height:100%;overscroll-behavior:none}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh}
+
+/* ---------- লগইন / ব্লকড স্ক্রিন — প্রোফাইল পেইজের সাথে হুবহু একই স্টাইল ---------- */
+#loginScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}
+#loginScreen img{width:84px;height:84px;border-radius:20px;margin-bottom:18px}
+#loginScreen h1{font-size:22px;margin-bottom:6px}
+#loginScreen p{color:var(--text-color);font-size:14px;margin-bottom:28px}
+#googleLoginBtn{display:flex;align-items:center;gap:10px;background:var(--surface);color:var(--text-color);border:none;padding:12px 26px;border-radius:24px;font-size:15px;font-weight:bold;cursor:pointer}
+#googleLoginBtn:disabled{opacity:0.6}
+#loginStatus{margin-top:16px;font-size:13px;color:var(--text-color);min-height:18px}
+#blockedScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}
+#blockedScreen h1{font-size:20px;margin-bottom:10px;color:var(--text-color)}
+#blockedScreen p{color:var(--text-color);font-size:14px;margin-bottom:24px;line-height:1.7;max-width:420px;white-space:pre-wrap}
+#blockedScreen button{background:var(--surface);color:var(--text-color);border:1px solid var(--line);padding:12px 26px;border-radius:24px;font-size:14px;font-weight:bold;cursor:pointer}
+
+/* ---------- মূল অ্যাপ স্ক্রিন — পুরো ভিউপোর্ট জুড়ে ফ্লেক্স কলাম (হেডার + কন্টেন্ট) ---------- */
+#appScreen{display:none;flex-direction:column;height:100vh;height:100dvh}
+#siteHeader{position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;background:var(--card-color);border-bottom:1px solid var(--line)}
+#siteHeader h1{font-size:16px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#backBtn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-color);font-size:20px;cursor:pointer;padding:4px 8px}
+#logoutBtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:var(--surface);color:var(--text-color);border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}
+#bootScreen{display:flex;align-items:center;justify-content:center;position:fixed;inset:0;z-index:800;background:var(--bg-color,#000);color:var(--text-color,#fff);font-size:15px}
+#bootScreen .spin{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--primary-color);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#headerCenter{display:flex;align-items:center;gap:10px;max-width:calc(100% - 190px);min-width:0}
+#headerText{min-width:0;text-align:left}
+#headerAvatar{display:none;overflow:visible;position:relative;background:none}
+#headerAvatar.online::after{content:'';position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid var(--bg-color);z-index:2}
+#headerStatus{font-size:11px;color:var(--text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;display:none}
+#headerStatus.active{color:var(--text-color)}
+#headerCenter.inbox #headerText{text-align:center}
+/* অ্যাভাটার (ছবি না থাকলে/লোড না হলে নামের প্রথম অক্ষর) */
+.av{position:relative;border-radius:50%;overflow:hidden;background:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.avFallback{font-weight:bold;color:var(--text-color)}
+.av.sm{width:34px;height:34px}.av.sm .avFallback{font-size:14px}
+.av.hd{width:38px;height:38px}.av.hd .avFallback{font-size:15px}
+.av.md{width:48px;height:48px}.av.md .avFallback{font-size:18px}
+.avSpacer{width:34px;flex-shrink:0}
+
+main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--max-width);width:100%;margin:0 auto}
+
+/* ---------- মেসেজিং বন্ধ থাকলে দেখানো নোটিশ (settings/messages থেকে নিয়ন্ত্রিত) ---------- */
+#disabledNotice{display:none;background:var(--surface);color:var(--text-color);font-size:12.5px;padding:9px 14px;text-align:center;line-height:1.5;flex-shrink:0}
+
+/* ---------- ইনবক্স (কনভারসেশন লিস্ট) ---------- */
+#inboxView{flex:1;overflow-y:auto;padding:12px}
+#inboxEmpty{text-align:center;color:var(--text-color);font-size:13px;padding:60px 20px;line-height:1.7}
+#inboxLoading{text-align:center;color:var(--text-color);font-size:13px;padding:30px 0}
+.convRow{display:flex;align-items:center;gap:12px;padding:12px 8px;border-bottom:1px solid var(--line);cursor:pointer}
+.convBody{flex:1;min-width:0}
+.convTop{display:flex;justify-content:space-between;gap:8px}
+.convName{font-size:14px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.convTime{font-size:11px;color:var(--text-color);flex-shrink:0}
+.convLast{font-size:12.5px;color:var(--text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+.convRow.unread .convName{color:var(--text-color)}
+.convRow.unread .convLast{color:var(--text-color);font-weight:600}
+.convRow.unread .convTime{color:var(--text-color);font-weight:bold}
+.unreadDot{width:9px;height:9px;border-radius:50%;background:var(--text-color);flex-shrink:0}
+.unreadSlot{display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.unreadBadge{min-width:22px;height:22px;padding:0 7px;border-radius:11px;background:var(--text-color);color:var(--bg-color);font-size:12.5px;font-weight:bold;display:flex;align-items:center;justify-content:center}
+
+/* ---------- চ্যাট ভিউ ---------- */
+#chatView{display:none;flex:1;flex-direction:column;overflow:hidden}
+#messagesScroll{flex:1;overflow-y:auto;padding:14px 14px;display:flex;flex-direction:column;gap:8px}
+#messagesList{display:flex;flex-direction:column;gap:3px}
+#messagesEmpty{text-align:center;color:var(--text-color);font-size:13px;padding:30px 0}
+.msgRow{display:flex;align-items:flex-start;gap:8px;max-width:80%}
+.msgRow.first{margin-top:16px}
+.msgRow.mine{align-self:flex-end;justify-content:flex-end}
+.msgRow.theirs{align-self:flex-start}
+.msgCol{min-width:0}
+.msgBubble{padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word;position:relative}
+.msgRow.mine .msgBubble{background:#16a34a;color:#fff;border-bottom-right-radius:4px}
+.msgRow.theirs .msgBubble{background:#2563eb;border:1px solid transparent;color:#fff;border-bottom-left-radius:4px}
+.msgMeta{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:10px;color:var(--text-color)}
+.msgRow.mine .msgMeta{justify-content:flex-end}
+#messageBar{flex-shrink:0;display:flex;gap:8px;align-items:flex-end;padding:10px 12px;border-top:1px solid var(--line);background:var(--card-color);box-shadow:0 -2px 10px rgba(0,0,0,0.35)}
+#messageInput{flex:1;background:var(--surface);border:1px solid var(--line);color:var(--text-color);padding:10px 12px;border-radius:18px;font-size:14px;font-family:inherit;resize:none;max-height:100px;min-height:40px}
+#sendBtn{background:none;color:var(--text-color);border:none;min-width:56px;width:auto;height:52px;border-radius:12px;font-size:48px;line-height:1;padding:0;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+#sendBtn.isSend{background:#2563eb;color:#ffffff;min-width:40px;width:40px;height:40px;border-radius:50%;font-size:16px}
+#sendBtn:disabled{opacity:0.5;cursor:default}
+#chatLoading{text-align:center;color:var(--text-color);font-size:13px;padding:30px 0}
+
+/* ---------- কল বাটন (হেডারে) ---------- */
+#callBtns{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:none;gap:2px}
+.callBtn{background:none;border:none;color:var(--text-color);width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.callBtn:active{background:var(--surface-active)}
+.callBtn:disabled{opacity:.35;cursor:default}
+.callBtn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.av.xl{width:110px;height:110px}.av.xl .avFallback{font-size:44px}
+
+/* ---------- কল স্ক্রিন ---------- */
+#callScreen{position:fixed;inset:0;z-index:1000;background:#000000;display:none;flex-direction:column;overflow:hidden}
+#remoteVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000000;opacity:0}
+#callScreen.video.hasRemote #remoteVideo{opacity:1}
+#localVideo{position:absolute;top:14px;right:12px;width:96px;height:136px;object-fit:cover;border-radius:12px;background:#000000;z-index:3;transform:scaleX(-1);border:1px solid rgba(255,255,255,0.3);display:none}
+#callInfo{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:16px}
+#callName{font-size:22px;font-weight:bold}
+#callStatus{font-size:14px;color:#ffffff}
+#callScreen.video.hasRemote #callInfo{flex:none;justify-content:flex-start;padding:22px 120px 30px 16px;background:linear-gradient(#000000aa,#00000000);text-shadow:0 1px 4px #000}
+#callScreen.video.hasRemote #callAvatar{display:none}
+#callScreen.video.hasRemote #callName{font-size:17px}
+#callControls{position:relative;z-index:2;margin-top:auto;display:flex;flex-wrap:wrap;justify-content:center;gap:14px;padding:20px 12px 34px;background:linear-gradient(#00000000,#000000aa)}
+.ctlWrap{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:#ffffff}
+.ctlBtn{width:56px;height:56px;border-radius:50%;border:none;background:#000000;color:#ffffff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ctlBtn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ctlBtn.off,.ctlBtn.on{background:#000000;color:#ffffff}
+@media (max-width:380px){.ctlBtn{width:50px;height:50px}#callControls{gap:10px}}
+.ctlBtn.end{background:#000000}
+.ctlBtn.accept{background:#000000}
+
+/* ---------- ইনকামিং কল ---------- */
+#incomingCall{position:fixed;inset:0;z-index:1100;background:#000000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px}
+#incName{font-size:24px;font-weight:bold}
+#incType{font-size:14px;color:var(--text-color)}
+#incBtns{display:flex;gap:70px;margin-top:50px}
+@keyframes ringPulse{0%{box-shadow:0 0 0 0 var(--line)}100%{box-shadow:0 0 0 26px var(--line)}}
+#incAvatar .av{animation:ringPulse 1.4s infinite}
+
+/* ---------- পারমিশন শিট ---------- */
+#permOpenBtn{display:none;width:100%;background:var(--surface);border:none;border-bottom:1px solid var(--line);color:var(--text-color);font-size:13px;padding:10px 14px;text-align:left;cursor:pointer}
+#permSheet{position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center}
+#permCard{width:100%;max-width:520px;background:var(--surface);border-radius:18px 18px 0 0;padding:20px 18px 26px;display:flex;flex-direction:column;gap:12px}
+#permCard h2{font-size:18px}
+#permCard p{font-size:13px;color:var(--text-color);line-height:1.5}
+.permRow{display:flex;justify-content:space-between;align-items:center;background:var(--surface);border-radius:10px;padding:11px 14px;font-size:14px}
+#permHelp{display:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.7;color:var(--text-color)}
+.permBtnMain{background:var(--surface);color:var(--text-color);border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:bold;cursor:pointer}
+.permBtnSub{background:none;color:var(--text-color);border:none;padding:8px;font-size:14px;cursor:pointer}
+
+/* ---------- চ্যাটের ভেতরে কল লগ (মিস কল / কল দেওয়া হয়েছিল) ---------- */
+.callLogRow{align-self:center;width:min(250px,72%);margin:14px 0}
+.callLog{background:var(--card-color);border:1px solid var(--line);border-radius:14px;padding:8px 10px;display:flex;flex-direction:column;gap:8px}
+.clTop{display:flex;align-items:center;gap:10px}
+.clIcon{width:34px;height:34px;border-radius:50%;background:var(--surface);color:var(--text-color);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.clIcon svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.callLog.missed .clIcon{background:var(--surface);color:var(--text-color)}
+.clText{min-width:0}
+.clTitle{font-size:13.5px;font-weight:bold;color:var(--text-color)}
+.callLog.missed .clTitle{color:var(--text-color)}
+.clSub{font-size:11px;color:var(--text-color);margin-top:1px}
+.clBtns{display:flex;gap:8px}
+.clBtn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--surface);border:1px solid var(--line);color:var(--text-color);border-radius:10px;padding:6px 4px;font-size:12px;font-family:inherit;cursor:pointer}
+.clBtn:active{background:var(--surface-active)}
+.clBtn:disabled{opacity:.4;cursor:default}
+.clBtn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- লাইক স্টিকার (শুধু 👍 হলে বড় সাইজে, বাবল ছাড়া) ---------- */
+.msgBubble.likeSticker{background:none!important;border:none!important;padding:0!important;font-size:126px;line-height:1}
+
+/* ---------- রিপ্লাই/এডিট প্রিভিউ বার (মেসেজ ইনপুটের ঠিক উপরে) ---------- */
+#composePreview{display:none;align-items:center;gap:8px;padding:8px 12px;background:var(--surface);border-top:1px solid var(--line);flex-shrink:0}
+#composePreview .cpLine{width:3px;align-self:stretch;background:var(--surface);border-radius:2px;flex-shrink:0}
+#composePreview .cpBody{flex:1;min-width:0}
+#composePreview .cpLabel{font-size:11px;color:var(--text-color);font-weight:bold}
+#composePreview .cpText{font-size:12.5px;color:var(--text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#composePreview .cpClose{background:none;border:none;color:var(--text-color);font-size:20px;cursor:pointer;padding:4px;flex-shrink:0}
+
+/* ---------- বাবলের ভিতরে কোটেড রিপ্লাই ---------- */
+.msgQuote{background:var(--surface-active);border-left:3px solid var(--line);border-radius:8px;padding:5px 8px;margin-bottom:5px;font-size:12px;opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.msgRow.theirs .msgQuote{background:rgba(0,0,0,.25);border-left-color:rgba(255,255,255,.6)}
+
+/* ---------- মেসেজের রিয়াকশন ব্যাজ (বাবলের কোণায় ছোট বাবল) ---------- */
+.msgReactions{position:absolute;bottom:-10px;right:6px;background:var(--card-color);border:1px solid var(--line);border-radius:10px;padding:1px 5px;font-size:12px;line-height:1.4}
+.msgRow.theirs .msgReactions{right:auto;left:6px}
+
+/* ---------- "সিন" ইন্ডিকেটর — মেসেজের সময়ের পাশে ছোট প্রোফাইল আইকন ---------- */
+.av.seenAv{width:14px;height:14px;flex-shrink:0}
+.av.seenAv .avFallback{font-size:8px}
+.editedTag{font-style:italic;opacity:.75}
+
+/* ---------- লং-প্রেস কনটেক্সট মেনু (মেসেজ ও ইনবক্স রো — দুই জায়গাতেই ব্যবহৃত হয়) ---------- */
+/* লং-প্রেসে ব্রাউজারের টেক্সট-সিলেকশন হাতল ও Google "Tap to see search results" প্যানেল যেন না আসে */
+.msgRow,.msgBubble,.msgQuote,.convRow,#ctxBackdrop,#ctxMenu{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+.msgBubble *,.convRow *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#messageInput{-webkit-user-select:text;user-select:text}
+/* ভয়েস মেসেজ */
+
+/* মিডিয়া আইকন সারি / টাইপিং মোড */
+#mediaRow{display:flex;gap:8px;align-items:center;flex:1;min-width:0}
+#textBtn{flex:1;min-width:0;height:40px;border:1px solid transparent;border-radius:20px;background:var(--surface-active);color:var(--text-color);text-align:left;padding:0 14px;font-size:14px;font-family:inherit;cursor:text;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#textBtn span{opacity:.65}
+#messageBar #messageInput{background:var(--surface-active);border-color:transparent}
+#messageBar #messageInput{display:none}
+#messageBar #textBack{display:none}
+#messageBar.typing #mediaRow{display:none}
+#messageBar.typing #messageInput{display:block}
+#messageBar.typing #textBack{display:flex}
+#messageBar.recording #mediaRow{display:none}
+#attachPreview{display:none;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid var(--line);background:var(--card-color)}
+#attachPreview.has{display:flex}
+#apThumb{width:44px;height:44px;border-radius:8px;object-fit:cover;display:none}
+#apIcon{font-size:26px;display:none}
+#apInfo{flex:1;min-width:0}
+#apName{font-size:13px;color:var(--text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#apSize{font-size:12px;color:var(--text-soft)}
+#apClose{background:none;border:none;color:var(--text-color);font-size:18px;cursor:pointer;padding:6px}
+.vpDl{background:none;border:none;color:inherit;font-size:14px;cursor:pointer;padding:0 2px;opacity:.85;flex-shrink:0}
+.msgBubble.hasImg{padding:4px}
+.imgWrap{position:relative;line-height:0}
+.msgImg{display:block;max-width:100%;width:176px;max-height:236px;object-fit:cover;border-radius:12px;cursor:pointer}
+.imgDl{position:absolute;right:8px;bottom:8px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(0,0,0,.6);color:#fff;font-size:14px;cursor:pointer;line-height:1;padding:0}
+.mcap{margin-top:6px;white-space:pre-wrap;word-break:break-word}
+.hasImg .mcap{padding:0 8px 6px}
+#imgViewer{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.95);display:none;align-items:center;justify-content:center}
+#imgViewer.open{display:flex}
+#imgViewer img{max-width:100%;max-height:100%;object-fit:contain}
+#ivClose,#ivDl{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:18px;cursor:pointer}
+#ivClose{right:12px}
+#ivDl{right:64px}
+#voiceBtn,.barBtn{background:var(--surface);color:var(--text-color);border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0}
+#voiceBtn svg,.barBtn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#voiceRec{display:none;flex:1;align-items:center;gap:12px;min-height:40px}
+#messageBar.recording #voiceRec{display:flex}
+#messageBar.recording #messageInput,#messageBar.recording #sendBtn,#messageBar.recording #voiceBtn{display:none}
+.recDot{width:10px;height:10px;border-radius:50%;background:var(--text-color);animation:recBlink 1s infinite;flex-shrink:0}
+@keyframes recBlink{50%{opacity:.25}}
+#recTime{flex:1;font-size:14px;color:var(--text-color)}
+#recCancel,#recSend{background:var(--surface);color:var(--text-color);border:none;width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0}
+.vp{display:flex;align-items:center;gap:6px;width:164px}
+.vpBtn{width:32px;height:32px;border-radius:50%;border:none;background:#22c55e;cursor:pointer;flex-shrink:0;padding:0;display:flex;align-items:center;justify-content:center}
+.msgRow.mine .vp{flex-direction:row-reverse}
+.vpBtn{color:#fff}
+.msgBubble.hasVp{padding:7px 10px}
+.msgMeta.noTime{display:none}
+.msgRow:has(.msgReactions){margin-bottom:10px}
+.msgRow.mine .vpBtn{background:#fff;color:#16a34a}
+.vpBar{flex:1;min-width:0;accent-color:currentColor;height:4px}
+.vpTime{font-size:11px;min-width:28px;text-align:right}
+#ctxBackdrop{position:fixed;inset:0;z-index:900;display:none;background:rgba(0,0,0,.62);align-items:flex-end;justify-content:center}
+#ctxMenu{position:relative;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;background:var(--surface);border-radius:22px 22px 0 0;padding:14px 0 calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.55);animation:ctxSlideUp .18s ease-out}
+#ctxMenu::before{content:'';display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 10px}
+@keyframes ctxSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+#ctxMenu .ctxReactions{display:flex;justify-content:space-around;align-items:center;padding:10px 12px 14px;border-bottom:1px solid var(--line);margin-bottom:4px}
+#ctxMenu .ctxReactions button{background:none;border:none;font-size:34px;cursor:pointer;padding:6px;line-height:1;border-radius:50%}
+#ctxMenu .ctxReactions button:active{background:var(--surface-active);transform:scale(1.15)}
+#ctxMenu .ctxItem{display:flex;align-items:center;gap:14px;width:100%;background:none;border:none;color:var(--text-color);text-align:left;padding:17px 22px;font-size:18px;font-family:inherit;cursor:pointer;border-top:1px solid var(--line)}
+#ctxMenu .ctxItem:first-child,#ctxMenu .ctxReactions + .ctxItem{border-top:none}
+#ctxMenu .ctxItem:active{background:var(--surface-active)}
+#ctxMenu .ctxItem.danger{color:var(--text-color)}
+
+#callScreen,#incomingCall{color:#ffffff}.ctlBtn{background:rgba(255,255,255,0.2)}.ctlBtn.off,.ctlBtn.on{background:#ffffff;color:#000000}.ctlBtn.end{background:#000000;border:2px solid #ffffff}.ctlBtn.accept{background:#ffffff;color:#000000}
+
+/* ---------- ধূসর মেসেজ বক্স + স্টিকার ---------- */
+:root{--gray-box:#4a4a4a}
+html[data-theme="light"]{--gray-box:#d0d0d0}
+#textBtn{background:var(--gray-box)}
+#messageBar #messageInput{background:var(--gray-box)}
+#messageBar{padding:10px 8px}
+#mediaRow{gap:6px}
+#mediaRow #voiceBtn,#mediaRow #audioFileBtn,#mediaRow #photoBtn{width:36px;height:36px}
+#textBtn{padding:0 10px}
+#mediaRow #stickerBtn{width:34px;height:34px;border-radius:50%;background:var(--gray-box)}
+#stickerPanel{display:none;flex-shrink:0;border-top:1px solid var(--line);background:var(--card-color);padding:10px;max-height:42vh;overflow-y:auto;gap:8px;flex-wrap:wrap}
+#stickerPanel.open{display:flex}
+.stkItem{background:none;color:var(--text-color);border:none;border-radius:18px;padding:8px 12px;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:84px}
+.stkE{font-size:38px;line-height:1.1}
+.stkT{font-size:13px;font-weight:bold;line-height:1.2}
+.stkItem:active{background:var(--surface-active)}
+.msgBubble.stickerMsg{background:none!important;border:none!important;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 18px;border-radius:24px;white-space:normal}
+.msgBubble.stickerMsg .stkE{font-size:56px;line-height:1.1}
+.msgBubble.stickerMsg .stkT{font-size:14px}
+
+/* ---------- লাইক বাটনে লং-প্রেসে ৬টা রিয়াকশন ---------- */
+#sendBtn{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#reactPop{display:none;position:fixed;z-index:1200;background:var(--card-color);border:1px solid var(--line);border-radius:32px;padding:6px 10px;gap:4px;box-shadow:0 4px 18px rgba(0,0,0,.5)}
+#reactPop.open{display:flex}
+#reactPop button{background:none;border:none;font-size:34px;line-height:1;padding:4px 6px;cursor:pointer;border-radius:50%}
+#reactPop button:active{background:var(--surface-active)}
+
+/* ---------- পুল-টু-রিফ্রেশ (উপর থেকে নিচে টানলে গোল রিফ্রেশ বাটন) ---------- */
+#ptr{position:fixed;top:0;left:50%;z-index:3000;width:44px;height:44px;border-radius:50%;background:var(--card-color);border:1px solid var(--line);color:var(--text-color);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.45);transform:translate(-50%,-70px);opacity:0;pointer-events:none}
+#ptr svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+#ptr.spin svg{animation:ptrSpin .8s linear infinite}
+@keyframes ptrSpin{to{transform:rotate(360deg)}}
+
+/* ===================== Fill Chat: নতুন স্টাইল ===================== */
+#siteHeader{min-height:58px}
+#menuBtn{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:var(--surface);border:1px solid var(--line);color:var(--text-color);font-size:19px;cursor:pointer;display:none;align-items:center;justify-content:center;padding:0}
+#siteHeader:has(#headerCenter.inbox) #menuBtn{display:flex}
+#siteHeader:has(#headerCenter.inbox) #backBtn{display:none}
+#headerCenter.inbox{max-width:calc(100% - 120px)}
+#chatMoreBtn{font-size:22px;line-height:1;font-weight:bold;color:var(--text-color)}
+#siteHeader:has(#headerCenter.inbox) #chatMoreBtn{display:none}
+body.fcBlockedChat #audioCallBtn,body.fcBlockedChat #videoCallBtn{display:none}
+body.fcBlockedChat #messageBar,body.fcBlockedChat #composePreview,body.fcBlockedChat #attachPreview,body.fcBlockedChat #stickerPanel{display:none!important}
+#blockBanner{display:none;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--card-color);font-size:13px;text-align:center}
+body.fcBlockedChat #blockBanner{display:flex}
+#blockBanner button{background:var(--text-color);color:var(--bg-color);border:none;border-radius:18px;padding:8px 18px;font-weight:bold;font-size:13px;cursor:pointer}
+.av.lg{width:84px;height:84px}.av.lg .avFallback{font-size:32px}
+
+/* প্রোফাইল কার্ড (প্রোফাইল পেজের মতো) */
+#fcProfileCard{background:var(--card-color);border:1px solid var(--line);border-radius:14px;margin-bottom:14px;overflow:hidden}
+#fcProfileBody{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:14px;align-items:center;padding:16px}
+#fcAvatar{grid-column:1;grid-row:1 / span 2}
+#fcAvatar .av.lg{border:1px solid var(--line)}
+#fcNameRow{grid-column:2;grid-row:1;display:flex;align-items:center;gap:6px;align-self:end;min-width:0}
+#fcName{font-size:18px;font-weight:bold;word-break:break-word}
+.fcDot{width:11px;height:11px;border-radius:50%;background:#00c853;box-shadow:0 0 0 3px rgba(0,200,83,.35);flex-shrink:0}
+#fcStatus{grid-column:2;grid-row:2;align-self:start;margin-top:3px;font-size:12px}
+#fcActionRow{display:flex;gap:10px;padding:0 16px 14px;justify-content:center;align-items:flex-end}
+.fcActionCol{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px}
+.fcCount{font-size:12px;text-align:center}.fcCount span{font-weight:bold}
+#fcActionRow .fcBtn{background:var(--surface);color:var(--text-color);border:1px solid var(--line);padding:11px 14px;border-radius:22px;font-weight:bold;font-size:12.5px;cursor:default;text-decoration:none;white-space:nowrap;opacity:.9}
+#fcActionRow a.fcBtn{cursor:pointer;opacity:1}
+#fcTabs{display:flex;gap:8px;margin:0 0 12px;justify-content:space-between}
+#fcTabs .fcTab{flex:1;text-align:center;background:var(--surface);color:var(--text-color);border:1px solid var(--line);padding:.7em 1.1em;border-radius:1.4em;font-weight:bold;font-size:13px;cursor:pointer}
+#fcTabs .fcTab.active{background:var(--text-color);color:var(--bg-color);border-color:var(--primary-color)}
+html[data-theme="light"] #fcTabs .fcTab.active{background:rgba(0,0,0,.08);color:var(--text-color)}
+#fcSubsPane{display:none}
+#fcSubsHead{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.fcBackBtn{background:var(--surface);border:1px solid var(--line);color:var(--text-color);border-radius:20px;padding:7px 14px;font-size:13px;font-weight:bold;cursor:pointer;flex-shrink:0}
+#fcSubsTitle{font-weight:bold;font-size:15px}
+#fcSearch{width:100%;height:42px;border-radius:22px;border:1px solid var(--line);background:var(--surface);color:var(--text-color);padding:0 16px;font-size:15px;outline:none;margin-bottom:12px}
+.fcRow{display:flex;align-items:center;gap:12px;padding:10px 6px;border-bottom:1px solid var(--line);cursor:pointer}
+.fcRow:active{background:var(--surface-active)}
+.fcRowName{flex:1;min-width:0;font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fcRowGo{font-size:12px;opacity:.85;flex-shrink:0}
+.fcNote{padding:18px;text-align:center;font-size:14px;opacity:.85}
+
+/* সাইডবার ও ফুল-স্ক্রিন সেকশন */
+#fcScrim{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.55);display:none}
+#fcSide{position:fixed;top:0;left:0;bottom:0;width:min(82vw,300px);z-index:610;background:var(--card-color);border-right:1px solid var(--line);transform:translateX(-102%);transition:transform .22s ease;display:flex;flex-direction:column}
+body.fcSideOpen #fcScrim{display:block}
+body.fcSideOpen #fcSide{transform:none}
+.fcHead{display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--line);font-weight:bold;font-size:17px}
+.fcIconBtn{width:38px;height:38px;border-radius:50%;background:var(--surface);border:1px solid var(--line);color:var(--text-color);font-size:18px;cursor:pointer;padding:0;flex-shrink:0}
+.fcBody{flex:1;overflow-y:auto;padding:12px}
+.fcItem{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;background:var(--surface);color:var(--text-color);border:1px solid var(--line);border-radius:14px;padding:15px 14px;margin-bottom:10px;font-size:15px;cursor:pointer;position:static!important;transform:none!important}
+.fcFoot{padding:12px;border-top:1px solid var(--line)}
+.fcFoot .fcItem{margin:0;justify-content:center;font-weight:bold}
+#fcSide #logoutBtn{display:flex!important;right:auto;top:auto}
+.fcFull{position:fixed;inset:0;z-index:650;background:var(--bg-color);display:none;flex-direction:column}
+.fcFull.on{display:flex}
+.fcSeg{display:flex;gap:6px}
+.fcSeg button{padding:7px 12px;border-radius:16px;border:1px solid var(--line);background:transparent;color:var(--text-color);cursor:pointer;font-size:13px}
+.fcSeg button.on{background:var(--text-color);color:var(--bg-color);border-color:var(--text-color)}
+.fcBlkRow{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line)}
+.fcBlkRow .fcRowName{cursor:default}
+.fcBlkRow button{background:var(--surface);color:var(--text-color);border:1px solid var(--line);border-radius:16px;padding:7px 14px;font-size:13px;font-weight:bold;cursor:pointer}
+#fcToast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--surface);color:var(--text-color);border:1px solid var(--line);padding:10px 18px;border-radius:20px;font-size:14px;z-index:1500;display:none;max-width:90%;text-align:center}
+</style>
+</head>
+<body>
+<div id="ptr" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg></div>
+<div id="reactPop"></div>
+
+  <div id="bootScreen">লোড হচ্ছে...</div>
+
+  <div id="loginScreen">
+    <img src="https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png" alt="Onuvuti">
+    <h1>Fill Chat</h1>
+    <p>Log in with Google to use Fill Chat</p>
+    <button id="googleLoginBtn">🔵 Continue with Google</button>
+    <div id="loginStatus"></div>
+  </div>
+
+  <div id="blockedScreen">
+    <h1 id="blockedTitle">⛔ প্রবেশাধিকার নেই</h1>
+    <p id="blockedMsg">আপনার একাউন্টে প্রবেশাধিকার নেই।</p>
+    <button id="blockedBackBtn">ঠিক আছে</button>
+  </div>
+
+  <div id="appScreen">
+    <div id="siteHeader">
+      <button id="backBtn">←</button>
+      <button id="menuBtn" type="button" aria-label="Menu">☰</button>
+      <div id="headerCenter" class="inbox">
+        <div id="headerAvatar" class="av hd"></div>
+        <div id="headerText">
+          <h1 id="headerTitle">Fill Chat</h1>
+          <div id="headerStatus"></div>
+        </div>
+      </div>
+      <div id="callBtns">
+        <button class="callBtn" id="chatMoreBtn" type="button" title="More" aria-label="More">⋮</button>
+        <button class="callBtn" id="audioCallBtn" title="অডিও কল"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></button>
+        <button class="callBtn" id="videoCallBtn" title="ভিডিও কল"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></button>
+      </div>
+    </div>
+
+    <div id="disabledNotice">⚠️ মেসেজিং ফিচারটি এই মুহূর্তে এডমিন কর্তৃক বন্ধ রাখা হয়েছে।</div>
+
+    <main>
+      <!-- ---------- ইনবক্স: সব কনভারসেশনের তালিকা ---------- -->
+      <div id="inboxView">
+        <div id="fcProfileCard">
+          <div id="fcProfileBody">
+            <div id="fcAvatar"></div>
+            <div id="fcNameRow"><span id="fcName"></span><span class="fcDot"></span></div>
+            <div id="fcStatus">Active now</div>
+          </div>
+          <div id="fcActionRow">
+            <div class="fcActionCol">
+              <div class="fcCount"><span id="fcSubCount">0</span></div>
+              <div class="fcBtn">🔔 Subscribers</div>
+            </div>
+            <div class="fcActionCol">
+              <a class="fcBtn" href="profile.html">✏️ Edit profile</a>
+            </div>
+          </div>
+        </div>
+        <div id="fcTabs">
+          <button type="button" class="fcTab active" id="fcTabMsgs">✉️ Messages</button>
+          <button type="button" class="fcTab" id="fcTabSubs">🔔 Subscribers</button>
+        </div>
+        <div id="fcMsgPane">
+        <button id="permOpenBtn">🔐 কলের অনুমতি ঠিক করুন (মাইক্রোফোন / ক্যামেরা)</button>
+        <div id="inboxLoading">লোড হচ্ছে...</div>
+        <div id="inboxEmpty" style="display:none;">No messages yet.<br>Open the Subscribers tab to find someone and say hi.</div>
+        <div id="convList"></div>
+        </div>
+        <div id="fcSubsPane">
+          <div id="fcSubsHead">
+            <button type="button" class="fcBackBtn" id="fcSubsBack">← Back</button>
+            <div id="fcSubsTitle">My subscribers</div>
+          </div>
+          <input type="text" id="fcSearch" placeholder="Search anyone by name" autocomplete="off" enterkeyhint="search">
+          <div id="fcSubsLoading" class="fcNote" style="display:none">Loading...</div>
+          <div id="fcSubsEmpty" class="fcNote" style="display:none">No subscribers yet.</div>
+          <div id="fcSubsList"></div>
+          <div id="fcSearchHead" class="fcNote" style="display:none;text-align:left;padding:6px 4px;font-weight:bold">Search results</div>
+          <div id="fcSearchList"></div>
+        </div>
+      </div>
+
+      <!-- ---------- চ্যাট: একজন নির্দিষ্ট ব্যক্তির সাথে কথোপকথন ---------- -->
+      <div id="chatView">
+        <div id="messagesScroll">
+          <div id="chatLoading">লোড হচ্ছে...</div>
+          <div id="messagesEmpty" style="display:none;">এখনো কোনো মেসেজ নেই। প্রথম মেসেজ পাঠান 👋</div>
+          <div id="messagesList"></div>
+        </div>
+        <div id="composePreview">
+          <div class="cpLine"></div>
+          <div class="cpBody">
+            <div class="cpLabel" id="cpLabel">রিপ্লাই</div>
+            <div class="cpText" id="cpText"></div>
+          </div>
+          <button class="cpClose" id="cpClose">✕</button>
+        </div>
+        <div id="attachPreview"><img id="apThumb" alt=""><span id="apIcon"></span><div id="apInfo"><div id="apName"></div><div id="apSize"></div></div><button id="apClose" type="button" aria-label="বাতিল">✕</button></div>
+        <div id="stickerPanel"></div>
+        <div id="blockBanner"><span>You blocked this person.</span><button type="button" id="blockBannerBtn">Unblock</button></div>
+        <div id="messageBar">
+          <div id="mediaRow">
+          <button id="voiceBtn" type="button" aria-label="ভয়েস মেসেজ"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+          <button id="audioFileBtn" class="barBtn" type="button" aria-label="ফোনের অডিও"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
+          <button id="photoBtn" class="barBtn" type="button" aria-label="ফটো"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>
+          <button id="textBtn" type="button" aria-label="মেসেজ লিখুন"><span>মেসেজ লিখুন...</span></button>
+          <button id="stickerBtn" class="barBtn" type="button" aria-label="স্টিকার"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></button>
+          </div>
+          <div id="voiceRec"><button id="recCancel" type="button" aria-label="বাতিল">✕</button><span class="recDot"></span><span id="recTime">0:00</span><button id="recSend" type="button" aria-label="পাঠান">➤</button></div>
+          <button id="textBack" class="barBtn" type="button" aria-label="পিছনে"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <textarea id="messageInput" placeholder="মেসেজ লিখুন..." rows="1" maxlength="2000" enterkeyhint="enter"></textarea>
+          <button id="sendBtn">👍</button>
+          <input type="file" id="audioFileInput" accept="audio/*" hidden>
+          <input type="file" id="photoInput" accept="image/*" hidden>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="imgViewer"><button id="ivDl" type="button" aria-label="ডাউনলোড">⬇</button><button id="ivClose" type="button" aria-label="বন্ধ">✕</button><img id="ivImg" alt=""></div>
+
+  <!-- ---------- পারমিশন শিট ---------- -->
+  <div id="permSheet">
+    <div id="permCard">
+      <h2>🔐 কলের জন্য অনুমতি দিন</h2>
+      <p>অডিও/ভিডিও কল করতে ও ধরতে মাইক্রোফোন আর ক্যামেরা লাগবে। নিচের বাটনে একবার চাপলে ব্রাউজার অনুমতি চাইবে — শুধু <b>Allow</b> চাপুন। একবার দিলে আর বারবার চাইবে না।</p>
+      <div class="permRow"><span>🎙️ মাইক্রোফোন</span><span id="permMicState">…</span></div>
+      <div class="permRow"><span>📷 ক্যামেরা</span><span id="permCamState">…</span></div>
+      <div id="permHelp">
+        ⛔ অনুমতি ব্লক করা আছে — ব্রাউজার আর নিজে থেকে চাইতে পারবে না। হাতে ঠিক করুন:<br>
+        ১) ঠিকানার বারের বাঁ পাশের আইকনে ট্যাপ করুন<br>
+        ২) <b>Permissions</b> / <b>Site settings</b> খুলুন<br>
+        ৩) মাইক্রোফোন ও ক্যামেরা <b>Allow</b> করুন<br>
+        ৪) নিচের "রিলোড" চাপুন<br>
+        <button class="permBtnSub" id="permReloadBtn" style="color:var(--text-color);text-decoration:underline;padding:6px 0">🔄 রিলোড করুন</button>
+      </div>
+      <button class="permBtnMain" id="permGrantBtn">✅ সব অনুমতি দিন</button>
+      <button class="permBtnSub" id="permLaterBtn">পরে</button>
+    </div>
+  </div>
+
+  <!-- ---------- ইনকামিং কল ---------- -->
+  <!-- ---------- Fill Chat: সাইডবার মেনু, সেটিংস, ব্লক তালিকা ---------- -->
+  <div id="fcScrim"></div>
+  <aside id="fcSide" aria-label="Menu">
+    <div class="fcHead"><button type="button" class="fcIconBtn" id="fcSideBack" aria-label="Back">←</button><span>Menu</span></div>
+    <div class="fcBody">
+      <button type="button" class="fcItem" id="fcOpenSettings"><span>Settings</span><span>›</span></button>
+    </div>
+    <div class="fcFoot"><button type="button" id="logoutBtn" class="fcItem">Log out</button></div>
+  </aside>
+  <div class="fcFull" id="fcSettings">
+    <div class="fcHead"><button type="button" class="fcIconBtn" data-fcback aria-label="Back">←</button><span>Settings</span></div>
+    <div class="fcBody">
+      <div class="fcItem" style="cursor:default"><span>Language</span><div class="fcSeg" id="fcLangSeg"><button type="button" data-l="en">English</button><button type="button" data-l="bn">বাংলা</button></div></div>
+      <div class="fcItem" style="cursor:default"><span>Theme</span><div class="fcSeg" id="fcThemeSeg"><button type="button" data-m="dark">Dark</button><button type="button" data-m="light">Light</button></div></div>
+      <button type="button" class="fcItem" id="fcOpenPerm"><span>Call permissions (microphone / camera)</span><span>›</span></button>
+      <button type="button" class="fcItem" id="fcOpenBlocked"><span>Blocked for messages</span><span>›</span></button>
+    </div>
+  </div>
+  <div class="fcFull" id="fcBlocked">
+    <div class="fcHead"><button type="button" class="fcIconBtn" data-fcback aria-label="Back">←</button><span>Blocked for messages</span></div>
+    <div class="fcBody"><div id="fcBlockedList"></div></div>
+  </div>
+  <div id="fcToast"></div>
+
+  <div id="incomingCall">
+    <div id="incAvatar"></div>
+    <div id="incName"></div>
+    <div id="incType"></div>
+    <div id="incBtns">
+      <div class="ctlWrap"><button class="ctlBtn end" id="incDecline"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>কেটে দিন</div>
+      <div class="ctlWrap"><button class="ctlBtn accept" id="incAccept"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></button>ধরুন</div>
+    </div>
+  </div>
+
+  <!-- ---------- কল স্ক্রিন (অডিও + ভিডিও) ---------- -->
+  <div id="callScreen">
+    <video id="remoteVideo" autoplay playsinline></video>
+    <video id="localVideo" autoplay playsinline muted></video>
+    <div id="callInfo">
+      <div id="callAvatar"></div>
+      <div id="callName"></div>
+      <div id="callStatus"></div>
+    </div>
+    <div id="callControls">
+      <div class="ctlWrap"><button class="ctlBtn" id="micBtn"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button><span id="micLabel">মিউট</span></div>
+      <div class="ctlWrap"><button class="ctlBtn" id="speakerBtn"><svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button><span id="speakerLabel">স্পিকার</span></div>
+      <div class="ctlWrap" id="camWrap"><button class="ctlBtn" id="camBtn"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></button>ক্যামেরা</div>
+      <div class="ctlWrap" id="flipWrap"><button class="ctlBtn" id="flipBtn"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button>ঘোরান</div>
+      <div class="ctlWrap"><button class="ctlBtn end" id="endBtn"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>কেটে দিন</div>
+    </div>
+  </div>
+
+  <!-- ---------- লং-প্রেস কনটেক্সট মেনু (মেসেজ ও ইনবক্স রো — দুই জায়গাতেই ব্যবহৃত হয়) ---------- -->
+  <div id="ctxBackdrop"><div id="ctxMenu"></div></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, collection, query, where, orderBy,
+    onSnapshot, addDoc, deleteDoc, serverTimestamp, limit, writeBatch, deleteField
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+  // একই Firebase প্রজেক্ট — বাকি সব পেইজের (profile.html ইত্যাদি) সাথে অভিন্ন
+  const firebaseConfig = {
+    apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
+    authDomain: "onuvuti-5c9e3.firebaseapp.com",
+    projectId: "onuvuti-5c9e3",
+    storageBucket: "onuvuti-5c9e3.firebasestorage.app",
+    messagingSenderId: "846713879232",
+    appId: "1:846713879232:web:538c47101eade3e2df8b25",
+    measurementId: "G-2K2L45CMWR"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  (function(){var go=function(){setTimeout(function(){import("https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js").then(function(m){m.getAnalytics(app)}).catch(function(){})},2500)};document.readyState==="complete"?go():window.addEventListener("load",go)})();
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  // থিম (ডার্ক/লাইট) — settings/site থেকে, বাকি পেজের মতোই
+  onSnapshot(doc(db, "settings", "site"), (snap) => {
+    if (!snap.exists()) return;
+    try { if (localStorage.getItem('fcTheme')) return; } catch (e) {}
+    const s = snap.data();
+    const __theme = (s.theme === 'light') ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', __theme);
+    try { localStorage.setItem('onuvutiTheme', __theme); } catch (e) {}
+  });
+  const provider = new GoogleAuthProvider();
+
+  // ---------- মোবাইলে ঠিকানার বক্স/টুলবারের কারণে 100vh আসল স্ক্রিনের চেয়ে বড় হয়ে যাওয়ার
+  // সমস্যা এড়াতে — window.innerHeight দিয়ে সরাসরি আসল দৃশ্যমান উচ্চতা মেপে বসানো হচ্ছে।
+  // এটা 100dvh সাপোর্ট না করা পুরনো ব্রাউজারেও কাজ করে (CSS ইউনিটের বদলে সরাসরি পিক্সেল ব্যবহার করে)
+  const appScreenEl = document.getElementById('appScreen');
+  function fixAppHeight() {
+    appScreenEl.style.height = window.innerHeight + 'px';
+  }
+  fixAppHeight();
+  window.addEventListener('resize', fixAppHeight);
+  window.addEventListener('orientationchange', () => setTimeout(fixAppHeight, 200));
+
+  let currentUser = null;
+  let myProfile = {};
+  let messagingEnabled = true;
+  let AUDIO_MAX_MB = 10, PHOTO_MAX_MB = 5;   // অ্যাডমিন সেটিং থেকে বদলায়
+  let VOICE_MAX_SEC = 300;   // ভয়েসের সর্বোচ্চ সময় (সেকেন্ড) — অ্যাডমিন প্যানেলের settings/messages.voiceMaxMin থেকে বদলায়
+
+  // চ্যাটের অবস্থা (পেইজ রিলোড ছাড়াই ইনবক্স ↔ চ্যাট বদলায়, তাই আবার লগইন স্ক্রিন আসে না)
+  let otherUid = null;
+  let otherName = 'ব্যবহারকারী';
+  let otherPhoto = '';
+  let otherLastActive = null;
+  let otherOnline = false;
+  let convId = null;
+  let convExists = false;
+  let lastMsgSnap = null;
+  let unsubMessages = null;
+  let unsubOther = null;
+  let unsubConv = null;      // চ্যাট খোলা অবস্থায় কনভারসেশন ডকুমেন্ট শোনে (lastSeenAt-এর জন্য, "সিন" ইন্ডিকেটর)
+  let unsubInbox = null;
+  let unreadUnsubs = [];     // ইনবক্সে প্রতিটা কনভারসেশনের "নতুন মেসেজ গণনা" লিসেনার
+  let statusTimer = null;
+  let routeToken = 0;
+  let otherSeenAt = null;    // ওপাশের লোক সর্বশেষ কখন চ্যাট দেখেছে (lastSeenAt) — "সিন" ইন্ডিকেটরের জন্য
+
+  // রিপ্লাই/এডিট — মেসেজ পাঠানোর আগে কোন মেসেজে রিপ্লাই দেওয়া হচ্ছে বা কোনটা এডিট হচ্ছে তা রাখে
+  let replyingTo = null;     // { id, text, mine }
+  let editingId = null;      // এডিট হচ্ছে এমন মেসেজের id (থাকলে সেন্ড বাটনে চাপলে নতুন মেসেজ না, আপডেট হবে)
+
+  const bootScreen = document.getElementById('bootScreen');
+  const loginScreen = document.getElementById('loginScreen');
+  const appScreen = document.getElementById('appScreen');
+  const blockedScreen = document.getElementById('blockedScreen');
+  const blockedTitle = document.getElementById('blockedTitle');
+  const blockedMsg = document.getElementById('blockedMsg');
+  const blockedBackBtn = document.getElementById('blockedBackBtn');
+  const loginBtn = document.getElementById('googleLoginBtn');
+  const loginStatus = document.getElementById('loginStatus');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const backBtn = document.getElementById('backBtn');
+  const headerCenter = document.getElementById('headerCenter');
+  const headerTitle = document.getElementById('headerTitle');
+  const headerAvatar = document.getElementById('headerAvatar');
+  const headerStatus = document.getElementById('headerStatus');
+  const disabledNotice = document.getElementById('disabledNotice');
+
+  const inboxView = document.getElementById('inboxView');
+  const inboxLoading = document.getElementById('inboxLoading');
+  const inboxEmpty = document.getElementById('inboxEmpty');
+  const convList = document.getElementById('convList');
+
+  const chatView = document.getElementById('chatView');
+  const chatLoading = document.getElementById('chatLoading');
+  const messagesScroll = document.getElementById('messagesScroll');
+  const messagesEmpty = document.getElementById('messagesEmpty');
+  const messagesList = document.getElementById('messagesList');
+  const messageInput = document.getElementById('messageInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const composePreview = document.getElementById('composePreview');
+  const cpLabel = document.getElementById('cpLabel');
+  const cpText = document.getElementById('cpText');
+  const cpClose = document.getElementById('cpClose');
+  const ctxBackdrop = document.getElementById('ctxBackdrop');
+  const ctxMenu = document.getElementById('ctxMenu');
+
+  const REACTIONS = { like: '👍', love: '❤️', haha: '😆', sad: '😢', angry: '😠', wow: '😮' };
+
+  function showOnly(which) {
+    bootScreen.style.display = which === 'boot' ? 'flex' : 'none';
+    loginScreen.style.display = which === 'login' ? 'flex' : 'none';
+    blockedScreen.style.display = which === 'blocked' ? 'flex' : 'none';
+    appScreen.style.display = which === 'app' ? 'flex' : 'none';
+  }
+
+  loginBtn.addEventListener('click', async () => {
+    loginBtn.disabled = true;
+    loginStatus.textContent = 'লগইন হচ্ছে...';
+    try { await signInWithPopup(auth, provider); }
+    catch (e) {
+      loginStatus.textContent = 'এরর: ' + (e && e.message ? e.message : String(e));
+      loginBtn.disabled = false;
+    }
+  });
+  logoutBtn.addEventListener('click', async () => {
+    hangup();
+    try { await writePresence(false); } catch (e) {}
+    await signOut(auth);
+  });
+  blockedBackBtn.addEventListener('click', () => { showOnly('login'); });
+
+  backBtn.addEventListener('click', () => {
+    if (ctxOpen) { closeCtxMenu(); return; }
+    if (window.__composerBackBtn && window.__composerBackBtn()) return;
+    if (convId) {
+      // চ্যাট থেকে ইনবক্সে — পেইজ রিলোড ছাড়াই
+      if (history.state && history.state.inApp) history.back();
+      else { history.replaceState({}, '', location.pathname); route(); }
+    } else if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      __go('index.html');
+    }
+  });
+  window.addEventListener('popstate', () => {
+    if (fcPopHandled()) return;   // সাইডবার/সেটিংস/ব্লক তালিকা খোলা থাকলে ব্যাক = শুধু সেটা বন্ধ
+    if (imgViewer.classList.contains('open')) { closeImgViewer(true); return; }   // ছবি খোলা থাকলে ব্যাক = শুধু ছবি বন্ধ
+    if (viewerIgnorePop) { viewerIgnorePop = false; return; }
+    if (window.__composerBack && window.__composerBack()) return;   // স্টিকার/মেসেজ বক্স খোলা থাকলে ব্যাক = শুধু সেটা বন্ধ
+    if (ctxOpen) { closeCtxMenu(true); return; }      // মেনু খোলা থাকলে ব্যাক = শুধু মেনু বন্ধ
+    if (ctxIgnorePop) { ctxIgnorePop = false; return; } // মেনু নিজে বন্ধ হওয়ার popstate — উপেক্ষা
+    route();
+  });
+
+  // ---------- একাউন্ট ডিলিট/সাসপেন্ড চেক — profile.html এর মতোই একই লজিক ----------
+  async function checkAccountBlocked(user) {
+    try {
+      const banSnap = await getDoc(doc(db, "bannedUsers", user.uid));
+      if (banSnap.exists()) {
+        await signOut(auth);
+        blockedTitle.textContent = '⛔ একাউন্ট মুছে ফেলা হয়েছে';
+        blockedMsg.textContent = 'আপনার এই একাউন্টটি এডমিন কর্তৃক স্থায়ীভাবে মুছে ফেলা হয়েছে। এই একাউন্ট দিয়ে আর প্রবেশ করা যাবে না।';
+        showOnly('blocked');
+        return true;
+      }
+      const userSnap = await getDoc(doc(db, "users", user.uid));
+      const data = userSnap.exists() ? userSnap.data() : null;
+      const susp = data && data.suspended;
+      if (susp && susp.active && susp.until) {
+        const untilDate = susp.until.toDate ? susp.until.toDate() : new Date(susp.until);
+        if (untilDate.getTime() > Date.now()) {
+          await signOut(auth);
+          const months = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+          const untilStr = untilDate.getDate() + ' ' + months[untilDate.getMonth()] + ' ' + untilDate.getFullYear();
+          blockedTitle.textContent = '⛔ একাউন্ট সাসপেন্ড করা হয়েছে';
+          blockedMsg.textContent = (susp.message || 'আপনার একাউন্টটি সাময়িকভাবে সাসপেন্ড করা হয়েছে।') + '\n\nমেয়াদ শেষ হবে: ' + untilStr;
+          showOnly('blocked');
+          return true;
+        } else {
+          await setDoc(doc(db, "users", user.uid), { suspended: { active: false } }, { merge: true });
+        }
+      }
+      return false;
+    } catch (err) {
+      console.error('checkAccountBlocked এরর:', err);
+      return false;
+    }
+  }
+
+  async function ensureUserProfile(user) {
+    const ref = doc(db, "users", user.uid);
+    const snap = await getDoc(ref);
+    const syncedFields = {
+      name: user.displayName || 'User',
+      photoURL: user.photoURL || '',
+      email: user.email || ''
+    };
+    if (snap.exists()) {
+      myProfile = { ...snap.data(), ...syncedFields };
+      await setDoc(ref, syncedFields, { merge: true });
+    } else {
+      myProfile = { ...syncedFields, createdAt: serverTimestamp() };
+      await setDoc(ref, myProfile);
+    }
+  }
+
+  function escapeHtml(str) {
+    return String(str == null ? '' : str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // ছবি থাকলে ছবি, না থাকলে/লোড না হলে নামের প্রথম অক্ষর
+  function avatarHtml(photo, name, size) {
+    const initial = (String(name || '?').trim().charAt(0) || '?').toUpperCase();
+    const fb = '<span class="avFallback">' + escapeHtml(initial) + '</span>';
+    const img = photo
+      ? '<img src="' + escapeHtml(photo) + '" alt="" referrerpolicy="no-referrer" loading="lazy" decoding="async" onerror="this.remove()">'
+      : '';
+    return '<div class="av ' + size + '">' + fb + img + '</div>';
+  }
+
+  // ================= লং-প্রেস কনটেক্সট মেনু (মেসেজ ও ইনবক্স রো — দুই জায়গাতেই ব্যবহৃত হয়) =================
+  // মেনু এখন ফেসবুকের মতো ফুল-স্ক্রিন বটম শিট। খোলার সময় একটা history এন্ট্রি পুশ হয়,
+  // তাই ফোনের/ব্রাউজারের ব্যাক চাপলে শুধু মেনু বন্ধ হয় — চ্যাট থেকে বের হয় না।
+  let ctxOpen = false, ctxPushed = false, ctxIgnorePop = false;
+  // মেসেজ বাবল / ইনবক্স রো-তে টেক্সট সিলেক্ট শুরুই হতে দেওয়া হবে না (ইনপুট বক্স বাদে)
+  document.addEventListener('selectstart', e => {
+    const t = e.target && (e.target.nodeType === 1 ? e.target : e.target.parentElement);
+    if (t && t.closest && t.closest('.msgRow, .convRow, #ctxBackdrop')) e.preventDefault();
+  });
+  function clearTextSelection() {
+    try { const sel = window.getSelection && window.getSelection(); if (sel && sel.removeAllRanges) sel.removeAllRanges(); } catch (e) {}
+  }
+  function openCtxMenu(anchorEl, itemsHtml) {
+    clearTextSelection();
+    ctxMenu.innerHTML = itemsHtml;
+    ctxMenu.scrollTop = 0;
+    ctxBackdrop.style.display = 'flex';
+    // লং-প্রেসের আঙুল ছাড়ার সময় যেন ভুল করে মেনু/বাটনে ট্যাপ না পড়ে — প্রথম ৩৫০ms ট্যাপ বন্ধ
+    ctxBackdrop.style.pointerEvents = 'none';
+    setTimeout(() => { if (ctxOpen) ctxBackdrop.style.pointerEvents = 'auto'; }, 350);
+    if (!ctxOpen) {
+      try {
+        history.pushState(Object.assign({}, history.state || {}, { ctx: true }), '', location.href);
+        ctxPushed = true;
+      } catch (e) { ctxPushed = false; }
+    }
+    ctxOpen = true;
+  }
+  function closeCtxMenu(fromPop) {
+    const wasOpen = ctxOpen;
+    ctxOpen = false;
+    ctxBackdrop.style.display = 'none';
+    ctxBackdrop.style.pointerEvents = 'auto';
+    ctxMenu.innerHTML = '';
+    if (wasOpen && ctxPushed) {
+      ctxPushed = false;
+      if (fromPop !== true) {
+        // বাটন/ব্যাকড্রপ দিয়ে বন্ধ হলে পুশ করা এন্ট্রিটা সরিয়ে দিই; এই popstate-এ route() চালানো যাবে না
+        ctxIgnorePop = true;
+        try { history.back(); } catch (e) { ctxIgnorePop = false; }
+        setTimeout(() => { ctxIgnorePop = false; }, 600);
+      }
+    }
+  }
+  ctxBackdrop.addEventListener('click', e => { if (e.target === ctxBackdrop) closeCtxMenu(); });
+
+  // এলিমেন্টে টাচ/মাউস "লং-প্রেস" বাঁধে (৪৫০ms); নড়াচড়া করলে বা তাড়াতাড়ি ছেড়ে দিলে বাতিল হয়ে যায়।
+  // লং-প্রেস ট্রিগার হলে window.__lpFired সেট হয়, যাতে ওই একই এলিমেন্টের normal click handler
+  // (যেমন ইনবক্স রো-তে চ্যাট খোলার ক্লিক) ভুল করে চলে না যায় — lpConsumed() দিয়ে চেক হয়।
+  function bindLongPress(el, handler) {
+    let t = null, moved = false, sx = 0, sy = 0;
+    const start = (x, y) => {
+      moved = false; sx = x; sy = y;
+      clearTimeout(t);
+      t = setTimeout(() => { if (!moved) { window.__lpFired = true; handler(); } }, 450);
+    };
+    const move = (x, y) => { if (Math.abs(x - sx) > 10 || Math.abs(y - sy) > 10) { moved = true; clearTimeout(t); } };
+    const cancel = () => clearTimeout(t);
+    el.addEventListener('touchstart', e => start(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+    el.addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+    el.addEventListener('touchend', cancel);
+    el.addEventListener('touchcancel', cancel);
+    el.addEventListener('mousedown', e => start(e.clientX, e.clientY));
+    el.addEventListener('mousemove', e => { if (t) move(e.clientX, e.clientY); });
+    el.addEventListener('mouseup', cancel);
+    el.addEventListener('mouseleave', cancel);
+    el.addEventListener('contextmenu', e => { e.preventDefault(); clearTimeout(t); window.__lpFired = true; handler(); });
+  }
+  function lpConsumed() {
+    if (window.__lpFired) { window.__lpFired = false; return true; }
+    return false;
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text || '').catch(() => fallbackCopy(text));
+    } else fallbackCopy(text);
+  }
+  function fallbackCopy(text) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text || ''; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    } catch (e) {}
+  }
+
+  // ---------- রিপ্লাই/এডিট প্রিভিউ বার ----------
+  function updateComposePreview() {
+    if (editingId) {
+      composePreview.style.display = 'flex';
+      cpLabel.textContent = '✏️ মেসেজ এডিট করা হচ্ছে';
+      cpText.textContent = 'পরিবর্তন করে ➤ চাপুন';
+    } else if (replyingTo) {
+      composePreview.style.display = 'flex';
+      cpLabel.textContent = replyingTo.name + '-কে রিপ্লাই';
+      cpText.textContent = replyingTo.text;
+    } else {
+      composePreview.style.display = 'none';
+    }
+  }
+  function startEditMessage(msgId, text) {
+    setTyping(true);
+    editingId = msgId;
+    replyingTo = null;
+    messageInput.value = text || '';
+    messageInput.style.height = 'auto';
+    messageInput.style.height = Math.min(messageInput.scrollHeight, 100) + 'px';
+    messageInput.focus();
+    updateComposePreview();
+    updateSendBtn();
+  }
+  function startReply(msgId, m, mine) {
+    editingId = null;
+    replyingTo = { id: msgId, text: (m.text || '').slice(0, 120), name: mine ? 'নিজের মেসেজ' : otherName };
+    setTyping(true);
+    messageInput.focus();
+    updateComposePreview();
+  }
+  cpClose.addEventListener('click', () => {
+    if (editingId) { editingId = null; messageInput.value = ''; messageInput.style.height = 'auto'; }
+    replyingTo = null;
+    updateComposePreview();
+    updateSendBtn();
+  });
+
+  // ---------- মেসেজ ডিলিট / রিঅ্যাকশন ----------
+  async function deleteMessage(msgId) {
+    if (!confirm('মেসেজটি মুছে ফেলতে চান?')) return;
+    try { await deleteDoc(doc(db, "conversations", convId, "messages", msgId)); }
+    catch (e) { alert('এরর: ' + e.message); }
+  }
+  async function toggleReaction(msgId, key) {
+    if (!currentUser || !convId) return;
+    try {
+      const mRef = doc(db, "conversations", convId, "messages", msgId);
+      let already = false;
+      if (lastMsgSnap) {
+        lastMsgSnap.forEach(d => {
+          if (d.id === msgId) { const r = d.data().reactions; already = !!(r && r[currentUser.uid] === key); }
+        });
+      }
+      await updateDoc(mRef, already
+        ? { [`reactions.${currentUser.uid}`]: deleteField() }
+        : { [`reactions.${currentUser.uid}`]: key });
+    } catch (e) { console.error('রিঅ্যাকশন দেওয়া যায়নি:', e); }
+  }
+
+  // মেসেজটা এখনো এডিট করা যাবে কিনা — ওপাশের লোক ইতিমধ্যে চ্যাট "সিন" করে ফেললে আর যাবে না
+  function messageEditable(m) {
+    if (!m.createdAt || !m.createdAt.toMillis) return true;
+    if (!otherSeenAt || !otherSeenAt.toMillis) return true;
+    return otherSeenAt.toMillis() < m.createdAt.toMillis();
+  }
+
+  function openMessageMenu(anchorEl, msgId, m, mine) {
+    let html = '';
+    if (mine) {
+      if (!isMediaMsg(m)) html += '<button class="ctxItem" data-act="copy">📋 কপি করুন</button>';
+      if (!isMediaMsg(m) && messageEditable(m)) html += '<button class="ctxItem" data-act="edit">✏️ এডিট করুন</button>';
+      if (isMediaMsg(m)) html += '<button class="ctxItem" data-act="download">⬇ ডাউনলোড</button>';
+      html += '<button class="ctxItem danger" data-act="delete">🗑️ ডিলিট করুন</button>';
+    } else {
+      html += '<div class="ctxReactions">' +
+        Object.keys(REACTIONS).map(k => '<button data-react="' + k + '">' + REACTIONS[k] + '</button>').join('') +
+        '</div>';
+      html += '<button class="ctxItem" data-act="reply">↩️ রিপ্লাই</button>';
+      if (!isMediaMsg(m)) html += '<button class="ctxItem" data-act="copy">📋 কপি করুন</button>';
+      if (isMediaMsg(m)) html += '<button class="ctxItem" data-act="download">⬇ ডাউনলোড</button>';
+    }
+    openCtxMenu(anchorEl, html);
+    ctxMenu.querySelectorAll('.ctxItem').forEach(b => b.addEventListener('click', () => {
+      const act = b.dataset.act;
+      closeCtxMenu();
+      if (act === 'copy') copyText(m.text || '');
+      else if (act === 'edit') startEditMessage(msgId, m.text || '');
+      else if (act === 'delete') deleteMessage(msgId);
+      else if (act === 'download') downloadMedia(m.audioUrl || m.imageUrl, mediaName(m));
+      else if (act === 'reply') startReply(msgId, m, mine);
+    }));
+    ctxMenu.querySelectorAll('[data-react]').forEach(b => b.addEventListener('click', () => {
+      closeCtxMenu();
+      toggleReaction(msgId, b.dataset.react);
+    }));
+  }
+
+  // ---------- ইনবক্স রো: Mark as Read / পুরো চ্যাট ডিলিট ----------
+  function openInboxMenu(anchorEl, convIdTarget) {
+    const html =
+      '<button class="ctxItem" data-act="read">✅ Mark as Read</button>' +
+      '<button class="ctxItem danger" data-act="delete">🗑️ চ্যাট ডিলিট করুন</button>' +
+      '<button class="ctxItem danger" data-act="block">🚫 Block user</button>';
+    openCtxMenu(anchorEl, html);
+    fcApplyLang();
+    ctxMenu.querySelectorAll('.ctxItem').forEach(b => b.addEventListener('click', async () => {
+      const act = b.dataset.act;
+      closeCtxMenu();
+      if (act === 'read') markConversationRead(convIdTarget);
+      else if (act === 'block') {
+        const ou = String(convIdTarget).split('_').find(x => x && x !== currentUser.uid);
+        const nm = anchorEl.querySelector('.convName');
+        const im = anchorEl.querySelector('.av img');
+        fcAskBlock(ou, nm ? nm.textContent : '', im ? im.getAttribute('src') : '');
+      }
+      else if (act === 'delete') {
+        if (!confirm('পুরো চ্যাট ডিলিট করতে চান? এটা ফিরিয়ে আনা যাবে না।')) return;
+        try { await deleteConversation(convIdTarget); }
+        catch (e) { alert('এরর: ' + e.message); }
+      }
+    }));
+  }
+  async function markConversationRead(cid) {
+    try { await updateDoc(doc(db, "conversations", cid), { [`lastRead.${currentUser.uid}`]: serverTimestamp() }); }
+    catch (e) { console.error('Mark as read এরর:', e); }
+  }
+  async function deleteConversation(cid) {
+    const mcol = collection(db, "conversations", cid, "messages");
+    // ৪০০-৪০০ করে ব্যাচে মেসেজ মোছা হয় (Firestore batch limit 500) — সবগুলো শেষ হলে তারপর কনভারসেশন ডকুমেন্ট মোছা হয়
+    while (true) {
+      const snap = await getDocs(query(mcol, limit(400)));
+      if (snap.empty) break;
+      const batch = writeBatch(db);
+      snap.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+      if (snap.size < 400) break;
+    }
+    await deleteDoc(doc(db, "conversations", cid));
+  }
+
+  function timeAgo(ts) {
+    if (!ts || !ts.toDate) return '';
+    const diffMs = Date.now() - ts.toDate().getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'এই মাত্র';
+    if (mins < 60) return mins + ' মিনিট আগে';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + ' ঘণ্টা আগে';
+    return Math.floor(hrs / 24) + ' দিন আগে';
+  }
+
+  // ---------- বাংলা তারিখ/সময় (লাস্ট একটিভের জন্য) ----------
+  const BN_DIGITS = '০১২৩৪৫৬৭৮৯';
+  const BN_MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+  function bn(n) { return String(n).replace(/\d/g, d => BN_DIGITS[d]); }
+  function fmtDateBn(d) {
+    // "২০ সেপ্টেম্বর" (আলাদা বছর হলে বছরসহ)
+    const now = new Date();
+    let s = bn(d.getDate()) + ' ' + BN_MONTHS[d.getMonth()];
+    if (d.getFullYear() !== now.getFullYear()) s += ' ' + bn(d.getFullYear());
+    return s;
+  }
+  function fmtLastActive(d) {
+    // ১-৫৯ মিনিট আগে → ১-২৩ ঘণ্টা আগে → ১-৭ দিন আগে → তারপর শুধু তারিখ (যেমন "১৬ সেপ্টেম্বর")
+    const now = new Date();
+    const diff = Math.max(0, now.getTime() - d.getTime());
+    const mins = Math.max(1, Math.floor(diff / 60000));
+    if (mins < 60) return bn(mins) + ' মিনিট আগে';
+    const hrs = Math.floor(diff / 3600000);
+    if (hrs < 24) return bn(hrs) + ' ঘণ্টা আগে';
+    const days = Math.floor(diff / 86400000);
+    if (days <= 7) return bn(days) + ' দিন আগে';
+    return fmtDateBn(d);
+  }
+
+  // ---------- অনলাইন / লাস্ট একটিভ (presence) ----------
+  // নিজের presence/{uid} ডকুমেন্টে lastActive + online লেখা হয়; অন্যজনের presence ডকুমেন্ট শুনে হেডারে দেখানো হয়
+  const ACTIVE_WINDOW_MS = 100000;
+  let presenceTimer = null;
+  function writePresence(online) {
+    if (!currentUser) return Promise.resolve();
+    return setDoc(doc(db, "presence", currentUser.uid), { lastActive: serverTimestamp(), online: !!online }, { merge: true }).catch(() => {});
+  }
+  function startPresence() {
+    stopPresence();
+    writePresence(!document.hidden);
+    presenceTimer = setInterval(() => { if (!document.hidden) writePresence(true); }, 45000);
+  }
+  function stopPresence() { if (presenceTimer) { clearInterval(presenceTimer); presenceTimer = null; } }
+  document.addEventListener('visibilitychange', () => { if (currentUser) writePresence(!document.hidden); });
+  window.addEventListener('pagehide', () => {
+    if (!currentUser) return;
+    writePresence(false);
+    if (call && call.docCreated) updateDoc(call.ref, { status: 'ended' }).catch(() => {});
+  });
+
+  function renderStatus() {
+    headerAvatar.classList.remove('online');
+    if (!convId) { headerStatus.style.display = 'none'; return; }
+    headerStatus.style.display = 'block';
+    const d = otherLastActive && otherLastActive.toDate ? otherLastActive.toDate() : null;
+    if (!d) {
+      // অন্যজন নতুন ভার্সনে একবারও ঢোকেনি (বা পড়ার পারমিশন নেই) — তথ্য নেই, তাই কিছুই দেখানো হবে না
+      headerStatus.textContent = '';
+      headerStatus.className = '';
+      headerStatus.style.display = 'none';
+      return;
+    }
+    if (otherOnline && Date.now() - d.getTime() < ACTIVE_WINDOW_MS) {
+      headerStatus.textContent = 'এখন একটিভ আছে';
+      headerStatus.className = 'active';
+      headerAvatar.classList.add('online');
+    } else {
+      headerStatus.textContent = fmtLastActive(d);
+      headerStatus.className = '';
+    }
+  }
+
+  // ---------- দুইজনের uid থেকে সবসময় একই ও নির্দিষ্ট conversationId বানানো হয় ----------
+  function makeConvId(a, b) { return [a, b].sort().join('_'); }
+
+  async function loadMessagingSettings() {
+    try {
+      const snap = await getDoc(doc(db, "settings", "messages"));
+      const d = snap.exists() ? snap.data() : {};
+      messagingEnabled = d.enabled !== false;
+      VOICE_MAX_SEC = Math.max(1, Math.min(60, Number(d.voiceMaxMin) || 5)) * 60;
+      AUDIO_MAX_MB = Math.max(1, Math.min(50, Number(d.audioMaxMB) || 10));
+      PHOTO_MAX_MB = Math.max(1, Math.min(20, Number(d.photoMaxMB) || 5));
+      disabledNotice.style.display = messagingEnabled ? 'none' : 'block';
+      sendBtn.disabled = !messagingEnabled;
+      messageInput.disabled = !messagingEnabled;
+      audioCallBtn.disabled = videoCallBtn.disabled = !messagingEnabled;
+    } catch (e) {
+      console.error('মেসেজিং সেটিংস লোড এরর:', e);
+    }
+  }
+
+  function clearUnreadListeners() { unreadUnsubs.forEach(u => { try { u(); } catch (e) {} }); unreadUnsubs = []; }
+  function stopInbox() { if (unsubInbox) { unsubInbox(); unsubInbox = null; } clearUnreadListeners(); }
+  function stopChat() {
+    if (unsubMessages) { unsubMessages(); unsubMessages = null; }
+    if (unsubOther) { unsubOther(); unsubOther = null; }
+    if (unsubConv) { unsubConv(); unsubConv = null; }
+    if (statusTimer) { clearInterval(statusTimer); statusTimer = null; }
+    convId = null; otherUid = null; lastMsgSnap = null; otherLastActive = null; otherOnline = false;
+    otherSeenAt = null; replyingTo = null; editingId = null;
+    updateComposePreview();
+  }
+
+  // ================= ইনবক্স মোড =================
+  function startInbox() {
+    headerCenter.classList.add('inbox');
+    fcOnInbox();
+    headerTitle.textContent = 'Fill Chat';
+    headerAvatar.style.display = 'none';
+    headerStatus.style.display = 'none';
+    logoutBtn.style.display = 'block';
+    callBtns.style.display = 'none';
+    inboxView.style.display = 'block';
+    chatView.style.display = 'none';
+    inboxLoading.style.display = 'block';
+    inboxLoading.textContent = 'লোড হচ্ছে...';
+    inboxEmpty.style.display = 'none';
+    convList.innerHTML = '';
+
+    const q = query(
+      collection(db, "conversations"),
+      where("participants", "array-contains", currentUser.uid),
+      orderBy("lastMessageAt", "desc")
+    );
+
+    unsubInbox = onSnapshot(q, snap => {
+      clearUnreadListeners();
+      inboxLoading.style.display = 'none';
+      if (snap.empty) {
+        inboxEmpty.style.display = 'block';
+        convList.innerHTML = '';
+        return;
+      }
+      inboxEmpty.style.display = 'none';
+      const frag = document.createDocumentFragment();
+      snap.forEach(d => {
+        const c = d.data();
+        const otherU = (c.participants || []).find(u => u !== currentUser.uid);
+        if (!otherU) return;
+        if (fcIsBlocked(otherU)) return;   // ব্লক করা ব্যক্তির চ্যাট ইনবক্সে দেখানো হয় না
+        const info = (c.participantInfo && c.participantInfo[otherU]) || {};
+        const name = info.name || 'ব্যবহারকারী';
+        const photo = info.photoURL || '';
+        const lastRead = c.lastRead && c.lastRead[currentUser.uid];
+        const isUnread = c.lastMessageAt && c.lastSenderUid && c.lastSenderUid !== currentUser.uid &&
+          (!lastRead || lastRead.toMillis() < c.lastMessageAt.toMillis());
+
+        const row = document.createElement('div');
+        row.className = 'convRow' + (isUnread ? ' unread' : '');
+        row.innerHTML = `
+          ${avatarHtml(photo, name, 'md')}
+          <div class="convBody">
+            <div class="convTop">
+              <div class="convName">${escapeHtml(name)}</div>
+              <div class="convTime">${timeAgo(c.lastMessageAt)}</div>
+            </div>
+            <div class="convLast">${escapeHtml(c.lastMessage || '')}</div>
+          </div>
+          ${isUnread ? '<div class="unreadSlot"><div class="unreadDot"></div></div>' : ''}
+        `;
+        // কয়টা নতুন মেসেজ (অন্যজনের পাঠানো, আমার শেষ পড়ার পরের) — গুনে সংখ্যা দেখানো হয়
+        if (isUnread) {
+          const slot = row.querySelector('.unreadSlot');
+          const mcol = collection(db, "conversations", d.id, "messages");
+          const cq = lastRead ? query(mcol, where("createdAt", ">", lastRead), limit(100)) : query(mcol, limit(100));
+          unreadUnsubs.push(onSnapshot(cq, ms => {
+            let n = 0;
+            ms.forEach(x => { if (x.data().senderUid !== currentUser.uid) n++; });
+            if (n > 0 && slot) slot.innerHTML = '<div class="unreadBadge">' + (n > 99 ? bn(99) + '+' : bn(n)) + '</div>';
+          }, err => console.error('নতুন মেসেজ গণনা এরর:', err)));
+        }
+        bindLongPress(row, () => openInboxMenu(row, d.id));
+        row.addEventListener('click', () => {
+          if (lpConsumed()) return;   // লং-প্রেসের পরে ছাড়ার সময় যেন ভুল করে চ্যাট খুলে না যায়
+          // পেইজ রিলোড ছাড়াই চ্যাট খোলা — তাই আর লগইন স্ক্রিন আসে না
+          const url = location.pathname + '?uid=' + encodeURIComponent(otherU) +
+            '&name=' + encodeURIComponent(name) + '&avatar=' + encodeURIComponent(photo);
+          history.pushState({ inApp: true }, '', url);
+          route();
+        });
+        frag.appendChild(row);
+      });
+      convList.innerHTML = '';
+      convList.appendChild(frag);
+      inboxEmpty.style.display = convList.children.length ? 'none' : 'block';
+      fcApplyLang();
+    }, err => {
+      console.error('ইনবক্স লোড এরর:', err);
+      inboxLoading.style.display = 'block';
+      inboxLoading.textContent = 'কনভারসেশন লোড করা যায়নি। (প্রথমবার হলে Firebase Console-এ ইনডেক্স তৈরি করার একটা লিংক ব্রাউজার কনসোলে (F12) দেখাতে পারে — সেখানে ক্লিক করে ইনডেক্স বানিয়ে নিন)';
+    });
+  }
+
+  // ================= চ্যাট মোড =================
+  function renderHeader() {
+    headerCenter.classList.remove('inbox');
+    headerTitle.textContent = otherName;
+    headerAvatar.innerHTML = avatarHtml(otherPhoto, otherName, 'hd');
+    headerAvatar.style.display = 'flex';
+    logoutBtn.style.display = 'none';
+    callBtns.style.display = 'flex';
+    renderStatus();
+    fcOnChat();
+  }
+
+  function renderMessages() {
+    const snap = lastMsgSnap;
+    if (!snap) return;
+    chatLoading.style.display = 'none';
+    if (snap.empty) {
+      messagesEmpty.style.display = 'block';
+      messagesList.innerHTML = '';
+      return;
+    }
+    messagesEmpty.style.display = 'none';
+    const frag = document.createDocumentFragment();
+    const myPhoto = myProfile.photoURL || (currentUser && currentUser.photoURL) || '';
+    const myName = myProfile.name || (currentUser && currentUser.displayName) || '';
+    let prevSender = null;
+    let lastMineRow = null, lastMineCreatedAt = null;
+    const _docs = [];
+    snap.forEach(d => { _docs.push(d); });
+    _docs.forEach((d, _i) => {
+      const m = d.data();
+      const _next = _docs[_i + 1] ? _docs[_i + 1].data() : null;
+      const showTime = !_next || _next.type === 'call' || _next.senderUid !== m.senderUid;   // টানা মেসেজের শুধু শেষটায় সময়
+      if (m.type === 'call') {          // কল লগ (মিস কল ইত্যাদি) — আলাদা কার্ড
+        prevSender = null;
+        frag.appendChild(buildCallLogRow(m, m.senderUid === currentUser.uid));
+        return;
+      }
+      const mine = m.senderUid === currentUser.uid;
+      // একই ব্যক্তির টানা মেসেজের মধ্যে শুধু প্রথমটার সাথে প্রোফাইল পিক
+      const first = m.senderUid !== prevSender;
+      prevSender = m.senderUid;
+
+      const row = document.createElement('div');
+      row.id = 'msg-' + d.id;
+      row.className = 'msgRow ' + (mine ? 'mine' : 'theirs') + (first ? ' first' : '');
+      const av = first
+        ? avatarHtml(mine ? myPhoto : otherPhoto, mine ? myName : otherName, 'sm')
+        : '<div class="avSpacer"></div>';
+
+      // 👍 একাই (কোনো রিপ্লাই ছাড়া) হলে বড় স্টিকার হিসেবে দেখানো হয় (Messenger-এর মতো)
+      const isLike = (m.text === '👍' || m.bigEmoji === true) && !m.replyTo && !m.sticker;
+      const isSticker = m.sticker === true && !m.replyTo;
+      const isVoice = (m.type === 'voice' || m.type === 'audio') && !!m.audioUrl;
+      const isImage = m.type === 'image' && !!m.imageUrl;
+      const quoteHtml = m.replyTo
+        ? '<div class="msgQuote" data-goto="' + escapeHtml(m.replyTo.id) + '">' + escapeHtml(m.replyTo.text || '') + '</div>'
+        : '';
+      const reactions = m.reactions || {};
+      const reactKeys = Object.keys(reactions);
+      const reactHtml = reactKeys.length
+        ? '<div class="msgReactions">' + reactKeys.map(u => REACTIONS[reactions[u]] || '').join('') + '</div>'
+        : '';
+      const editedHtml = m.edited ? '<span class="editedTag"> · এডিট করা</span>' : '';
+
+      const content = `
+        <div class="msgCol">
+          <div class="msgBubble${isLike ? ' likeSticker' : ''}${isSticker ? ' stickerMsg' : ''}${isImage ? ' hasImg' : ''}${isVoice ? ' hasVp' : ''}">${quoteHtml}${isVoice ? voicePlayerHtml(m) + captionHtml(m) : isImage ? imageBubbleHtml(m) + captionHtml(m) : (isLike ? escapeHtml(m.text) : isSticker ? stickerHtml(m.text) : escapeHtml(m.text))}${reactHtml}</div>
+          <div class="msgMeta${showTime ? '' : ' noTime'}"><span>${timeAgo(m.createdAt)}${editedHtml}</span></div>
+        </div>
+      `;
+      row.innerHTML = mine ? content + av : av + content;
+
+      const vpEl = row.querySelector('.vp');
+      if (vpEl) bindVoicePlayer(vpEl);
+      bindMediaExtras(row, m);
+
+      const quoteEl = row.querySelector('.msgQuote');
+      if (quoteEl) quoteEl.addEventListener('click', () => {
+        const target = document.getElementById('msg-' + quoteEl.dataset.goto);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+
+      // লং-প্রেস → কপি/এডিট/ডিলিট (নিজের) অথবা রিপ্লাই/কপি/রিঅ্যাকশন (অন্যের)
+      bindLongPress(row.querySelector('.msgBubble'), () => openMessageMenu(row, d.id, m, mine));
+
+      if (mine) { lastMineRow = row; lastMineCreatedAt = m.createdAt; }
+      frag.appendChild(row);
+    });
+
+    // ---------- "সিন" ইন্ডিকেটর — সর্বশেষ যে নিজের মেসেজটা ওপাশের লোক দেখে ফেলেছে, শুধু তার পাশেই ছোট আইকন ----------
+    if (lastMineRow && lastMineCreatedAt && lastMineCreatedAt.toMillis &&
+        otherSeenAt && otherSeenAt.toMillis && otherSeenAt.toMillis() >= lastMineCreatedAt.toMillis()) {
+      const meta = lastMineRow.querySelector('.msgMeta');
+      if (meta) meta.insertAdjacentHTML('beforeend', avatarHtml(otherPhoto, otherName, 'sm seenAv'));
+    }
+
+    messagesList.innerHTML = '';
+    messagesList.appendChild(frag);
+    messagesScroll.scrollTop = messagesScroll.scrollHeight;
+  }
+
+  async function startChat(uid, nameParam, avatarParam, token) {
+    otherUid = uid;
+    otherName = nameParam || 'ব্যবহারকারী';
+    otherPhoto = avatarParam || '';
+    convId = makeConvId(currentUser.uid, uid);
+    convExists = false;
+    lastMsgSnap = null;
+    otherLastActive = null;
+    otherOnline = false;
+    const convRef = doc(db, "conversations", convId);
+
+    messagesList.innerHTML = '';
+    messagesEmpty.style.display = 'none';
+    chatLoading.style.display = 'block';
+    messageInput.value = '';
+    replyingTo = null; editingId = null; otherSeenAt = null;
+    updateComposePreview();
+    updateSendBtn();
+    resetComposerMode();
+    inboxView.style.display = 'none';
+    chatView.style.display = 'flex';
+    renderHeader();
+
+    // কনভারসেশন ডকুমেন্ট তৈরি হয় প্রথম মেসেজ পাঠানোর সময় (sendCurrentMessage-এ)
+    try {
+      const snap = await getDoc(convRef);
+      if (token !== routeToken) return;
+      convExists = snap.exists();
+      if (convExists) {
+        const d = snap.data();
+        const info = d.participantInfo && d.participantInfo[uid];
+        if (!nameParam && info && info.name) otherName = info.name;
+        if (!avatarParam && info && info.photoURL) otherPhoto = info.photoURL;
+        renderHeader();
+      }
+    } catch (e) {
+      console.error('কনভারসেশন লোড এরর:', e);
+    }
+    if (token !== routeToken) return;
+
+    // "পড়া হয়েছে" মার্ক (lastRead — নিজের আনরিড ব্যাজ সরে) ও "সিন" (lastSeenAt — ওপাশের লোক জানবে দেখেছি) — চ্যাট খোলার সময়
+    if (convExists) {
+      updateDoc(convRef, {
+        [`lastRead.${currentUser.uid}`]: serverTimestamp(),
+        [`lastSeenAt.${currentUser.uid}`]: serverTimestamp(),
+        [`participantInfo.${currentUser.uid}`]: { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' }
+      }).catch(() => {});
+    }
+
+    const mq = query(collection(convRef, "messages"), orderBy("createdAt", "asc"), limit(500));
+    let firstMsgSnap = true;
+    unsubMessages = onSnapshot(mq, snap => {
+      lastMsgSnap = snap;
+      renderMessages();
+      // চ্যাট খোলা থাকা অবস্থায় অন্যজনের নতুন মেসেজ এলে সেটাও "পড়া হয়েছে"+"সিন" — নইলে ইনবক্সে ফিরলে ভুল করে নতুন দেখাত
+      const isFirst = firstMsgSnap; firstMsgSnap = false;
+      if (!isFirst && !document.hidden && currentUser &&
+          snap.docChanges().some(ch => ch.type === 'added' && !ch.doc.metadata.hasPendingWrites && ch.doc.data().senderUid !== currentUser.uid)) {
+        updateDoc(convRef, {
+          [`lastRead.${currentUser.uid}`]: serverTimestamp(),
+          [`lastSeenAt.${currentUser.uid}`]: serverTimestamp()
+        }).catch(() => {});
+      }
+    }, err => {
+      console.error('মেসেজ লোড এরর:', err);
+      chatLoading.style.display = 'block';
+      chatLoading.textContent = 'মেসেজ লোড করা যায়নি।';
+    });
+
+    // ওপাশের লোক সর্বশেষ কখন চ্যাট "সিন" করেছে (lastSeenAt) — সিন-ইন্ডিকেটরের জন্য রিয়েল-টাইম শোনা হয়
+    unsubConv = onSnapshot(convRef, s => {
+      const d = s.exists() ? s.data() : {};
+      otherSeenAt = (d.lastSeenAt && d.lastSeenAt[uid]) || null;
+      renderMessages();
+    }, err => console.error('lastSeenAt শোনার এরর:', err));
+
+    // অন্যজনের অনলাইন/লাস্ট একটিভ (presence/{uid})
+    unsubOther = onSnapshot(doc(db, "presence", uid), s => {
+      const d = s.exists() ? s.data() : {};
+      otherLastActive = d.lastActive || null;
+      otherOnline = d.online === true;
+      renderStatus();
+    }, err => { console.error('স্ট্যাটাস লোড এরর:', err); renderStatus(); });
+
+    // "একটিভ" → "লাস্ট একটিভ" নিজে নিজে বদলানোর জন্য
+    statusTimer = setInterval(renderStatus, 30000);
+  }
+
+  // ---------- URL দেখে ইনবক্স নাকি চ্যাট দেখাবে ঠিক করে ----------
+  async function route() {
+    if (!currentUser) return;
+    const token = ++routeToken;
+    stopInbox();
+    stopChat();
+    const p = new URLSearchParams(__loc.search);
+    const uid = p.get('uid');
+    if (uid && uid !== currentUser.uid) {
+      await startChat(uid, p.get('name') || '', p.get('avatar') || '', token);
+    } else {
+      startInbox();
+    }
+  }
+
+  async function submitEdit() {
+    const text = messageInput.value.trim();
+    if (!text || !convId || !editingId) { editingId = null; updateComposePreview(); updateSendBtn(); return; }
+    const id = editingId;
+    sendBtn.disabled = true;
+    try {
+      await updateDoc(doc(db, "conversations", convId, "messages", id), {
+        text: text.slice(0, 2000),
+        edited: true,
+        editedAt: serverTimestamp()
+      });
+      editingId = null;
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+      updateComposePreview();
+    } catch (e) {
+      alert('এডিট করা যায়নি — এরর: ' + e.message);
+    } finally {
+      sendBtn.disabled = !messagingEnabled;
+      updateSendBtn();
+    }
+  }
+
+  async function sendCurrentMessage(forceLike, stickerText, isBigEmoji) {
+    if (!stickerText) {
+      if (editingId) { await submitEdit(); return; }
+      if (pendingAttach) { await sendAttachment(); return; }
+    }
+    const raw = stickerText ? '' : messageInput.value.trim();
+    const text = stickerText || raw || (forceLike ? '👍' : '');   // ইনপুট খালি থাকলে সেন্ড বাটনে 👍 দেখায়, চাপলে লাইক পাঠানো হয়
+    if (!text || !messagingEnabled || !convId || fcIsBlocked(otherUid)) return;
+    const replySnapshot = replyingTo;
+    sendBtn.disabled = true;
+    try {
+      const convRef = doc(db, "conversations", convId);
+
+      // আগে কনভারসেশন ডকুমেন্ট (থাকলে আপডেট, না থাকলে তৈরি), তারপর মেসেজ
+      if (!convExists) {
+        await setDoc(convRef, {
+          participants: [currentUser.uid, otherUid].sort(),
+          participantInfo: {
+            [currentUser.uid]: { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' },
+            [otherUid]: { name: otherName, photoURL: otherPhoto }
+          },
+          createdAt: serverTimestamp(),
+          lastMessage: text.slice(0, 120),
+          lastMessageAt: serverTimestamp(),
+          lastSenderUid: currentUser.uid,
+          [`lastRead.${currentUser.uid}`]: serverTimestamp()
+        });
+        convExists = true;
+      } else {
+        await updateDoc(convRef, {
+          lastMessage: text.slice(0, 120),
+          lastMessageAt: serverTimestamp(),
+          lastSenderUid: currentUser.uid,
+          [`lastRead.${currentUser.uid}`]: serverTimestamp(),
+          [`participantInfo.${currentUser.uid}`]: { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' }
+        });
+      }
+
+      const payload = {
+        senderUid: currentUser.uid,
+        text: text.slice(0, 2000),
+        createdAt: serverTimestamp()
+      };
+      if (replySnapshot) payload.replyTo = { id: replySnapshot.id, text: replySnapshot.text };
+      if (stickerText) { if (isBigEmoji) payload.bigEmoji = true; else payload.sticker = true; }
+      await addDoc(collection(convRef, "messages"), payload);
+      try { window.OnuNotify && window.OnuNotify.message(otherUid, 'text', text); } catch (_) {}
+
+      if (!stickerText) {
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+      }
+      replyingTo = null;
+      updateComposePreview();
+    } catch (e) {
+      alert('মেসেজ পাঠানো যায়নি — এরর: ' + e.message);
+    } finally {
+      sendBtn.disabled = !messagingEnabled;
+      updateSendBtn();
+    }
+  }
+
+  // সেন্ড বাটন: ইনপুট খালি থাকলে 👍, লেখা থাকলে ➤, এডিট চলাকালীন ✔ (Messenger-এর মতো)
+  function updateSendBtn() {
+    const typingNow = document.getElementById('messageBar').classList.contains('typing');
+    // মেসেজ বক্স খোলা থাকলে (ইনপুট থাকুক বা না থাকুক) সবসময় সেন্ড আইকন — লাইক শুধু বক্স বন্ধ থাকলে
+    const asSend = typingNow || !!editingId || !!pendingAttach;
+    sendBtn.classList.toggle('isSend', asSend);
+    if (editingId) { sendBtn.textContent = '✔'; return; }
+    sendBtn.textContent = asSend ? '➤' : '👍';
+  }
+
+  sendBtn.addEventListener('click', () => sendCurrentMessage(!document.getElementById('messageBar').classList.contains('typing') && !editingId && !pendingAttach));
+
+  // ================= ভয়েস মেসেজ (অডিও Supabase Storage-এ, মেসেজ Firestore-এ) =================
+  const SUPABASE_URL = 'https://hrcaywasntwrcwkdzjuu.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_MTiahKNII0LDV_K3aL11QQ_pOzleTx0';
+  const VOICE_BUCKET = 'voice';
+  const VP_PLAY = '<svg viewBox="0 0 24 24" width="15" height="15"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
+  const VP_PAUSE = '<svg viewBox="0 0 24 24" width="15" height="15"><path d="M6 5h4v14H6zM14 5h4v14h-4z" fill="currentColor"/></svg>';
+  const voiceBtn = document.getElementById('voiceBtn');
+  const messageBarEl = document.getElementById('messageBar');
+  const recTime = document.getElementById('recTime');
+  const recCancel = document.getElementById('recCancel');
+  const recSend = document.getElementById('recSend');
+  let vRec = null;                     // { recorder, stream, chunks, startedAt, timer, mime }
+  let sbClient = null;
+
+  function fmtSec(t) {
+    t = Math.max(0, Math.round(t || 0));
+    return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
+  }
+  async function getSupabase() {
+    if (sbClient) return sbClient;
+    const mod = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    sbClient = mod.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+    return sbClient;
+  }
+  function pickVoiceMime() {
+    if (!window.MediaRecorder) return '';
+    const list = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
+    for (const t of list) { try { if (MediaRecorder.isTypeSupported(t)) return t; } catch (e) {} }
+    return '';
+  }
+  function releaseVoiceStream() {
+    if (!vRec) return;
+    clearInterval(vRec.timer);
+    try { vRec.stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+  }
+  function endRecordingUI() {
+    messageBarEl.classList.remove('recording');
+    recTime.textContent = '0:00';
+  }
+
+  async function startVoiceRecording() {
+    if (vRec || editingId || !messagingEnabled || !convId) return;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+      alert('এই ব্রাউজারে ভয়েস রেকর্ড সাপোর্ট করে না।');
+      return;
+    }
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch (e) { alert('মাইক্রোফোনের অনুমতি পাওয়া যায়নি। ব্রাউজারের সেটিংস থেকে মাইক্রোফোন চালু করুন।'); return; }
+    const mime = pickVoiceMime();
+    let recorder;
+    try { recorder = new MediaRecorder(stream, Object.assign({ audioBitsPerSecond: 32000 }, mime ? { mimeType: mime } : {})); }
+    catch (e) { stream.getTracks().forEach(t => t.stop()); alert('রেকর্ড শুরু করা যায়নি।'); return; }
+    vRec = { recorder, stream, chunks: [], startedAt: Date.now(), timer: null, mime: recorder.mimeType || mime || 'audio/webm' };
+    recorder.ondataavailable = ev => { if (ev.data && ev.data.size) vRec && vRec.chunks.push(ev.data); };
+    recorder.start(1000);
+    messageBarEl.classList.add('recording');
+    vRec.timer = setInterval(() => {
+      if (!vRec) return;
+      const sec = (Date.now() - vRec.startedAt) / 1000;
+      recTime.textContent = fmtSec(sec) + ' / ' + fmtSec(VOICE_MAX_SEC);
+      if (sec >= VOICE_MAX_SEC) finishVoiceRecording(true);
+    }, 250);
+  }
+
+  function cancelVoiceRecording() {
+    if (!vRec) return;
+    const r = vRec; vRec = null;
+    clearInterval(r.timer);
+    try { r.recorder.onstop = null; if (r.recorder.state !== 'inactive') r.recorder.stop(); } catch (e) {}
+    try { r.stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+    endRecordingUI();
+  }
+
+  function finishVoiceRecording(send) {
+    if (!vRec) return;
+    if (!send) { cancelVoiceRecording(); return; }
+    const r = vRec; vRec = null;
+    clearInterval(r.timer);
+    const duration = Math.min(VOICE_MAX_SEC, Math.round((Date.now() - r.startedAt) / 1000));
+    r.recorder.onstop = async () => {
+      try { r.stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+      endRecordingUI();
+      const blob = new Blob(r.chunks, { type: r.mime });
+      if (duration < 1 || !blob.size) return;     // খুব ছোট রেকর্ড পাঠানো হবে না
+      await sendVoiceMessage(blob, duration);
+    };
+    try { r.recorder.stop(); } catch (e) { endRecordingUI(); }
+  }
+
+  async function sendVoiceMessage(blob, duration) {
+    if (!messagingEnabled || !convId || !currentUser) return;
+    const label = '🎤 ভয়েস মেসেজ';
+    voiceBtn.disabled = true; sendBtn.disabled = true;
+    try {
+      const baseType = (blob.type || 'audio/webm').split(';')[0];
+      const ext = baseType.includes('mp4') ? 'm4a' : baseType.includes('ogg') ? 'ogg' : 'webm';
+      const path = convId + '/' + currentUser.uid + '_' + Date.now() + '.' + ext;
+      const sb = await getSupabase();
+      const up = await sb.storage.from(VOICE_BUCKET).upload(path, blob, { contentType: baseType, upsert: false });
+      if (up.error) throw up.error;
+      const audioUrl = sb.storage.from(VOICE_BUCKET).getPublicUrl(path).data.publicUrl;
+
+      const convRef = doc(db, "conversations", convId);
+      if (!convExists) {
+        await setDoc(convRef, {
+          participants: [currentUser.uid, otherUid].sort(),
+          participantInfo: {
+            [currentUser.uid]: { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' },
+            [otherUid]: { name: otherName, photoURL: otherPhoto }
+          },
+          createdAt: serverTimestamp(),
+          lastMessage: label,
+          lastMessageAt: serverTimestamp(),
+          lastSenderUid: currentUser.uid,
+          [`lastRead.${currentUser.uid}`]: serverTimestamp()
+        });
+        convExists = true;
+      } else {
+        await updateDoc(convRef, {
+          lastMessage: label,
+          lastMessageAt: serverTimestamp(),
+          lastSenderUid: currentUser.uid,
+          [`lastRead.${currentUser.uid}`]: serverTimestamp(),
+          [`participantInfo.${currentUser.uid}`]: { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' }
+        });
+      }
+      await addDoc(collection(convRef, "messages"), {
+        senderUid: currentUser.uid,
+        text: label,
+        type: 'voice',
+        audioUrl: audioUrl,
+        duration: duration,
+        createdAt: serverTimestamp()
+      });
+      try { window.OnuNotify && window.OnuNotify.message(otherUid, 'voice', label); } catch (_) {}
+    } catch (e) {
+      alert('ভয়েস মেসেজ পাঠানো যায়নি — এরর: ' + (e && e.message ? e.message : e));
+    } finally {
+      voiceBtn.disabled = false;
+      sendBtn.disabled = !messagingEnabled;
+      updateSendBtn();
+    }
+  }
+
+
+  // ================= ফটো ও ফোনের অডিও ফাইল পাঠানো =================
+  const PHOTO_BUCKET = 'photos';
+  const audioFileBtn = document.getElementById('audioFileBtn');
+  const photoBtn = document.getElementById('photoBtn');
+  const textBtn = document.getElementById('textBtn');
+  const textBack = document.getElementById('textBack');
+  const audioFileInput = document.getElementById('audioFileInput');
+  const photoInput = document.getElementById('photoInput');
+  const attachPreview = document.getElementById('attachPreview');
+  const apThumb = document.getElementById('apThumb');
+  const apIcon = document.getElementById('apIcon');
+  const apName = document.getElementById('apName');
+  const apSize = document.getElementById('apSize');
+  const apClose = document.getElementById('apClose');
+  const imgViewer = document.getElementById('imgViewer');
+  const ivImg = document.getElementById('ivImg');
+  const ivDl = document.getElementById('ivDl');
+  const ivClose = document.getElementById('ivClose');
+  let pendingAttach = null;      // { kind:'image'|'audio', blob/file, name, size, duration, previewUrl }
+  let viewerUrl = '', viewerName = '';
+
+  function setTyping(on) {
+    messageBarEl.classList.toggle('typing', !!on);
+    stickerPanel.classList.remove('open');
+    updateSendBtn();
+    syncComposerHistory();
+    if (on) { messageInput.focus(); }
+  }
+  function resetComposerMode() {
+    clearAttach();
+    messageBarEl.classList.remove('typing');
+    stickerPanel.classList.remove('open');
+    updateSendBtn();
+    syncComposerHistory();
+  }
+  function fmtMB(b) { return (b / 1048576).toFixed(1) + ' MB'; }
+  function isMediaMsg(m) { return m.type === 'voice' || m.type === 'audio' || m.type === 'image'; }
+
+  function downloadMedia(url, name) {
+    if (!url) return;
+    const a = document.createElement('a');
+    a.href = url + (url.includes('?') ? '&' : '?') + 'download=' + encodeURIComponent(name || 'file');
+    a.download = name || 'file';
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+  function mediaName(m) {
+    if (m.fileName) return m.fileName;
+    const url = m.audioUrl || m.imageUrl || '';
+    const ext = (url.split('?')[0].split('.').pop() || '').slice(0, 5);
+    return (m.type === 'image' ? 'photo-' : 'audio-') + Date.now() + (ext ? '.' + ext : '');
+  }
+  function captionHtml(m) {
+    return m.caption ? '<div class="mcap">' + escapeHtml(m.caption) + '</div>' : '';
+  }
+  function imageBubbleHtml(m) {
+    return '<div class="imgWrap"><img class="msgImg" src="' + escapeHtml(m.imageUrl) + '" loading="lazy" alt="ফটো">' +
+      '<button class="imgDl" type="button" aria-label="ডাউনলোড">⬇</button></div>';
+  }
+  function bindMediaExtras(row, m) {
+    const img = row.querySelector('.msgImg');
+    if (img) img.addEventListener('click', ev => { ev.stopPropagation(); openImgViewer(m.imageUrl, mediaName(m)); });
+    const idl = row.querySelector('.imgDl');
+    if (idl) idl.addEventListener('click', ev => { ev.stopPropagation(); downloadMedia(m.imageUrl, mediaName(m)); });
+    const vdl = row.querySelector('.vpDl');
+    if (vdl) vdl.addEventListener('click', ev => { ev.stopPropagation(); downloadMedia(m.audioUrl, mediaName(m)); });
+  }
+  let viewerPushed = false, viewerIgnorePop = false;
+  function openImgViewer(url, name) {
+    viewerUrl = url; viewerName = name;
+    ivImg.src = url;
+    if (!imgViewer.classList.contains('open')) {
+      try { history.pushState(Object.assign({}, history.state || {}, { viewer: true }), '', location.href); viewerPushed = true; }
+      catch (e) { viewerPushed = false; }
+    }
+    imgViewer.classList.add('open');
+  }
+  function closeImgViewer(fromPop) {
+    const was = imgViewer.classList.contains('open');
+    imgViewer.classList.remove('open');
+    ivImg.removeAttribute('src');
+    if (was && viewerPushed) {
+      viewerPushed = false;
+      if (fromPop !== true) {
+        viewerIgnorePop = true;
+        try { history.back(); } catch (e) { viewerIgnorePop = false; }
+        setTimeout(() => { viewerIgnorePop = false; }, 600);
+      }
+    }
+  }
+  ivClose.addEventListener('click', closeImgViewer);
+  imgViewer.addEventListener('click', ev => { if (ev.target === imgViewer) closeImgViewer(); });
+  ivDl.addEventListener('click', () => downloadMedia(viewerUrl, viewerName));
+
+  function showAttachPreview() {
+    const a = pendingAttach;
+    if (!a) { attachPreview.classList.remove('has'); return; }
+    attachPreview.classList.add('has');
+    apName.textContent = a.name;
+    apSize.textContent = fmtMB(a.size);
+    if (a.kind === 'image') { apThumb.src = a.previewUrl; apThumb.style.display = 'block'; apIcon.style.display = 'none'; }
+    else { apThumb.style.display = 'none'; apIcon.style.display = 'block'; apIcon.textContent = '🎵'; }
+  }
+  function clearAttach() {
+    if (pendingAttach && pendingAttach.previewUrl) { try { URL.revokeObjectURL(pendingAttach.previewUrl); } catch (e) {} }
+    pendingAttach = null;
+    attachPreview.classList.remove('has');
+    apThumb.removeAttribute('src');
+    updateSendBtn();
+  }
+  apClose.addEventListener('click', clearAttach);
+
+  async function compressImage(file) {
+    if (file.type === 'image/gif') return file;
+    try {
+      const bmp = await createImageBitmap(file);
+      const sc = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+      const w = Math.max(1, Math.round(bmp.width * sc)), h = Math.max(1, Math.round(bmp.height * sc));
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(bmp, 0, 0, w, h);
+      const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.82));
+      return (blob && blob.size) ? blob : file;
+    } catch (e) { return file; }
+  }
+  function readAudioDuration(file) {
+    return new Promise(resolve => {
+      const url = URL.createObjectURL(file);
+      const au = new Audio();
+      let done = false;
+      const fin = d => { if (done) return; done = true; try { URL.revokeObjectURL(url); } catch (e) {} resolve(d); };
+      au.preload = 'metadata';
+      au.onloadedmetadata = () => fin(isFinite(au.duration) ? Math.round(au.duration) : 0);
+      au.onerror = () => fin(0);
+      setTimeout(() => fin(0), 3000);
+      au.src = url;
+    });
+  }
+
+  function canAttach() {
+    if (!messagingEnabled || !convId || !currentUser) return false;
+    if (fcIsBlocked(otherUid)) return false;
+    if (editingId || vRec) return false;
+    return true;
+  }
+  photoBtn.addEventListener('click', () => { if (canAttach()) photoInput.click(); });
+  audioFileBtn.addEventListener('click', () => { if (canAttach()) audioFileInput.click(); });
+  textBtn.addEventListener('click', () => { if (messagingEnabled) setTyping(true); });
+  textBack.addEventListener('click', () => { messageBarEl.classList.remove('typing'); updateSendBtn(); syncComposerHistory(); });
+
+  // ---------- স্টিকার ----------
+  const STICKERS = [
+    '👋 Hi', '🙋 Hello', '😊 How are you', '🌅 Good morning', '🌙 Good night', '🤗 কেমন আছেন', '😇 ভালো আছি',
+    '🤝 আসসালামু আলাইকুম', '🤲 ওয়ালাইকুম আসসালাম', '☀️ শুভ সকাল', '🌃 শুভ রাত্রি', '🙏 ধন্যবাদ', '😍 Thank you',
+    '🌹 স্বাগতম', '🤩 Welcome', '👌 ঠিক আছে', '👍 OK', '✅ হ্যাঁ', '❌ না', '😔 দুঃখিত', '🥺 Sorry', '🎉 অভিনন্দন',
+    '🥳 Congratulations', '🎂 শুভ জন্মদিন', '🎁 Happy Birthday', '🕌 ঈদ মুবারক', '⭐ Eid Mubarak', '🤲 আলহামদুলিল্লাহ',
+    '✨ মাশাআল্লাহ', '🤞 ইনশাআল্লাহ', '🤲 দোয়া করবেন', '😃 কী খবর?', '📞 কল দিন', '🕐 পরে কথা হবে',
+    '⏳ একটু অপেক্ষা করুন', '👋 Bye', '🙌 খোদা হাফেজ'];
+  // স্টিকার = "ইমোজি লেখা" — প্রথম স্পেসের আগে ইমোজি, পরে লেখা (কমেন্টেও একই ফরম্যাট ব্যবহার করা যাবে)
+  function stickerParts(t) {
+    const i = String(t).indexOf(' ');
+    return i < 0 ? { e: '', t: String(t) } : { e: t.slice(0, i), t: t.slice(i + 1) };
+  }
+  function stickerHtml(t) {
+    const p = stickerParts(t);
+    return '<span class="stkE">' + escapeHtml(p.e) + '</span><span class="stkT">' + escapeHtml(p.t) + '</span>';
+  }
+  const stickerBtn = document.getElementById('stickerBtn');
+  const stickerPanel = document.getElementById('stickerPanel');
+  STICKERS.forEach(t => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'stkItem'; b.innerHTML = stickerHtml(t);
+    b.addEventListener('click', () => { closeStickers(); sendCurrentMessage(false, t); });
+    stickerPanel.appendChild(b);
+  });
+  function closeStickers() { stickerPanel.classList.remove('open'); syncComposerHistory(); }
+  stickerBtn.addEventListener('click', () => {
+    if (!canAttach()) return;
+    stickerPanel.classList.toggle('open');
+    syncComposerHistory();
+  });
+
+  // ---------- ব্যাক বাটন: স্টিকার প্যানেল / মেসেজ বক্স খোলা থাকলে ব্যাক = শুধু সেটা বন্ধ, মেসেজিং থেকে বের হবে না ----------
+  let compPushed = false, compIgnorePop = false, rpTimer = null, rpFired = false, rpOpen = false;
+  function composerLayerOpen() {
+    const rp = document.getElementById('reactPop');
+    return stickerPanel.classList.contains('open') || messageBarEl.classList.contains('typing') || !!(rp && rp.classList.contains('open'));
+  }
+  function syncComposerHistory() {
+    const open = composerLayerOpen();
+    if (open && !compPushed) {
+      try { history.pushState(Object.assign({}, history.state || {}, { composer: true }), '', location.href); compPushed = true; }
+      catch (e) { compPushed = false; }
+    } else if (!open && compPushed) {
+      compPushed = false;
+      compIgnorePop = true;
+      try { history.back(); } catch (e) { compIgnorePop = false; }
+      setTimeout(() => { compIgnorePop = false; }, 600);
+    }
+  }
+  // ব্রাউজার/ফোনের ব্যাক চাপলে — popstate থেকে ডাকা হয়
+  function closeComposerLayersFromPop() {
+    compPushed = false;
+    stickerPanel.classList.remove('open');
+    messageBarEl.classList.remove('typing');
+    const rp = document.getElementById('reactPop');
+    if (rp) rp.classList.remove('open');
+    rpOpen = false;
+    updateSendBtn();
+  }
+  window.__composerBack = function () {
+    if (compIgnorePop) { compIgnorePop = false; return true; }
+    if (compPushed && composerLayerOpen()) { closeComposerLayersFromPop(); return true; }
+    if (compPushed) { compPushed = false; }
+    return false;
+  };
+  // অ্যাপের উপরের ব্যাক বাটন
+  window.__composerBackBtn = function () {
+    if (composerLayerOpen()) {
+      messageBarEl.classList.remove('typing'); stickerPanel.classList.remove('open');
+      const rp = document.getElementById('reactPop');
+      if (rp) rp.classList.remove('open');
+      rpOpen = false;
+      updateSendBtn(); syncComposerHistory();
+      return true;
+    }
+    return false;
+  };
+
+  photoInput.addEventListener('change', async () => {
+    const file = photoInput.files && photoInput.files[0];
+    photoInput.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { alert('শুধু ছবি বাছাই করুন।'); return; }
+    const blob = await compressImage(file);
+    if (blob.size > PHOTO_MAX_MB * 1048576) { alert('ফটোটি বেশি বড় — সর্বোচ্চ ' + PHOTO_MAX_MB + ' MB।'); return; }
+    clearAttach();
+    pendingAttach = { kind: 'image', blob, name: file.name || 'photo.jpg', size: blob.size, previewUrl: URL.createObjectURL(blob) };
+    showAttachPreview();
+    updateSendBtn();
+    setTyping(true);
+  });
+  audioFileInput.addEventListener('change', async () => {
+    const file = audioFileInput.files && audioFileInput.files[0];
+    audioFileInput.value = '';
+    if (!file) return;
+    if (!(file.type.startsWith('audio/') || /\.(mp3|m4a|aac|wav|ogg|opus|amr|flac|webm)$/i.test(file.name))) { alert('শুধু অডিও ফাইল বাছাই করুন।'); return; }
+    if (file.size > AUDIO_MAX_MB * 1048576) { alert('অডিও ফাইলটি বেশি বড় — সর্বোচ্চ ' + AUDIO_MAX_MB + ' MB।'); return; }
+    const duration = await readAudioDuration(file);
+    clearAttach();
+    pendingAttach = { kind: 'audio', file, name: file.name || 'audio', size: file.size, duration, previewUrl: '' };
+    showAttachPreview();
+    updateSendBtn();
+    setTyping(true);
+  });
+
+  // কনভারসেশন ডক (না থাকলে তৈরি) + মেসেজ — ফটো/অডিও ফাইলের জন্য
+  async function postChatMessage(label, extra) {
+    const me = currentUser.uid;
+    const myInfo = { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' };
+    const convRef = doc(db, "conversations", convId);
+    if (!convExists) {
+      await setDoc(convRef, {
+        participants: [me, otherUid].sort(),
+        participantInfo: { [me]: myInfo, [otherUid]: { name: otherName, photoURL: otherPhoto } },
+        createdAt: serverTimestamp(),
+        lastMessage: label,
+        lastMessageAt: serverTimestamp(),
+        lastSenderUid: me,
+        [`lastRead.${me}`]: serverTimestamp()
+      });
+      convExists = true;
+    } else {
+      await updateDoc(convRef, {
+        lastMessage: label,
+        lastMessageAt: serverTimestamp(),
+        lastSenderUid: me,
+        [`lastRead.${me}`]: serverTimestamp(),
+        [`participantInfo.${me}`]: myInfo
+      });
+    }
+    await addDoc(collection(convRef, "messages"), Object.assign({
+      senderUid: me,
+      text: label,
+      createdAt: serverTimestamp()
+    }, extra));
+    try { window.OnuNotify && window.OnuNotify.message(otherUid, 'attach', label); } catch (_) {}
+  }
+
+  async function sendAttachment() {
+    const a = pendingAttach;
+    if (!a || !messagingEnabled || !convId || !currentUser) return;
+    const caption = messageInput.value.trim().slice(0, 2000);
+    sendBtn.disabled = true;
+    apName.textContent = 'পাঠানো হচ্ছে...';
+    try {
+      const sb = await getSupabase();
+      let extra, label;
+      if (a.kind === 'image') {
+        const isGif = a.blob.type === 'image/gif';
+        const ext = isGif ? 'gif' : 'jpg';
+        const path = convId + '/' + currentUser.uid + '_' + Date.now() + '.' + ext;
+        const up = await sb.storage.from(PHOTO_BUCKET).upload(path, a.blob, { contentType: isGif ? 'image/gif' : 'image/jpeg', upsert: false });
+        if (up.error) throw up.error;
+        const imageUrl = sb.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl;
+        extra = { type: 'image', imageUrl, fileName: 'photo-' + Date.now() + '.' + ext };
+        label = '📷 ফটো';
+      } else {
+        const ext = ((a.name.split('.').pop() || 'mp3').toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp3').slice(0, 5);
+        const path = 'files/' + convId + '/' + currentUser.uid + '_' + Date.now() + '.' + ext;
+        const up = await sb.storage.from(VOICE_BUCKET).upload(path, a.file, { contentType: a.file.type || 'audio/mpeg', upsert: false });
+        if (up.error) throw up.error;
+        const audioUrl = sb.storage.from(VOICE_BUCKET).getPublicUrl(path).data.publicUrl;
+        extra = { type: 'audio', audioUrl, duration: a.duration || 0, fileName: a.name };
+        label = '🎵 অডিও';
+      }
+      if (caption) extra.caption = caption;
+      await postChatMessage(label, extra);
+      clearAttach();
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+    } catch (e) {
+      alert('পাঠানো যায়নি — এরর: ' + (e && e.message ? e.message : e));
+      showAttachPreview();
+    } finally {
+      sendBtn.disabled = !messagingEnabled;
+      updateSendBtn();
+    }
+  }
+
+  voiceBtn.addEventListener('click', startVoiceRecording);
+  recCancel.addEventListener('click', cancelVoiceRecording);
+  recSend.addEventListener('click', () => finishVoiceRecording(true));
+
+  // ---------- ভয়েস প্লেয়ার (একসাথে একটাই বাজবে; লিস্ট রিফ্রেশ হলেও চালু প্লেয়ার ঠিক থাকবে) ----------
+  let vpAudio = null, vpUrl = null, vpUi = null;
+  function voicePlayerHtml(m) {
+    const dur = Math.max(0, Number(m.duration) || 0);
+    return '<div class="vp" data-url="' + escapeHtml(m.audioUrl) + '" data-dur="' + dur + '">' +
+      '<button class="vpBtn" type="button" aria-label="প্লে">' + VP_PLAY + '</button>' +
+      '<input class="vpBar" type="range" min="0" max="100" step="0.1" value="0" aria-label="সময়">' +
+      '<span class="vpTime">' + fmtSec(dur) + '</span>' +
+      '<button class="vpDl" type="button" aria-label="ডাউনলোড">⬇</button></div>';
+  }
+  function vpPaint() {
+    if (!vpUi) return;
+    const playing = !!(vpAudio && vpUrl === vpUi.url && !vpAudio.paused);
+    const cur = (vpAudio && vpUrl === vpUi.url) ? vpAudio.currentTime : 0;
+    const total = vpUi.dur || (vpAudio && isFinite(vpAudio.duration) ? vpAudio.duration : 0);
+    vpUi.btn.innerHTML = playing ? VP_PAUSE : VP_PLAY;
+    vpUi.bar.value = total ? Math.min(100, (cur / total) * 100) : 0;
+    vpUi.tm.textContent = fmtSec(playing || cur > 0 ? cur : total);
+  }
+  function bindVoicePlayer(root) {
+    const ui = {
+      url: root.dataset.url, dur: Number(root.dataset.dur) || 0,
+      btn: root.querySelector('.vpBtn'), bar: root.querySelector('.vpBar'), tm: root.querySelector('.vpTime')
+    };
+    if (vpAudio && vpUrl === ui.url) { vpUi = ui; vpPaint(); }
+    ui.btn.addEventListener('click', ev => {
+      ev.stopPropagation();
+      if (vpAudio && vpUrl === ui.url) {
+        vpUi = ui;
+        if (vpAudio.paused) vpAudio.play().catch(() => {}); else vpAudio.pause();
+        vpPaint();
+        return;
+      }
+      if (vpAudio) { vpAudio.pause(); }
+      vpAudio = new Audio(ui.url);
+      vpUrl = ui.url; vpUi = ui;
+      vpAudio.addEventListener('timeupdate', vpPaint);
+      vpAudio.addEventListener('play', vpPaint);
+      vpAudio.addEventListener('pause', vpPaint);
+      vpAudio.addEventListener('ended', () => { vpAudio.currentTime = 0; vpPaint(); });
+      vpAudio.addEventListener('error', () => { alert('ভয়েস মেসেজটি চালানো যায়নি।'); });
+      vpAudio.play().catch(() => {});
+    });
+    ui.bar.addEventListener('input', () => {
+      if (!(vpAudio && vpUrl === ui.url)) return;
+      const total = ui.dur || (isFinite(vpAudio.duration) ? vpAudio.duration : 0);
+      if (total) vpAudio.currentTime = (ui.bar.value / 100) * total;
+    });
+    ui.bar.addEventListener('click', ev => ev.stopPropagation());
+  }
+  // মোবাইলে কিবোর্ডের Enter = নতুন লাইন (পাঠাতে হবে সেন্ড বাটনে); ডেস্কটপে Enter = পাঠানো, Shift+Enter = নতুন লাইন
+  const isTouchOnly = () => window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  messageInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !isTouchOnly()) {
+      e.preventDefault();
+      if (editingId) submitEdit();
+      else if (messageInput.value.trim() !== '' || pendingAttach) sendCurrentMessage(false);
+    }
+  });
+  messageInput.addEventListener('input', () => {
+    messageInput.style.height = 'auto';
+    messageInput.style.height = Math.min(messageInput.scrollHeight, 100) + 'px';
+    updateSendBtn();
+  });
+
+  // ================= লাইক বাটনে লং-প্রেস: ৬টা রিয়াকশন =================
+  const reactPop = document.getElementById('reactPop');
+  const BIG_REACTS = ['👍', '❤️', '😆', '😢', '😠', '😮'];
+  rpTimer = null;
+  BIG_REACTS.forEach(e => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = e;
+    b.addEventListener('click', ev => { ev.stopPropagation(); closeReactPop(); sendCurrentMessage(false, e, true); });
+    reactPop.appendChild(b);
+  });
+  function openReactPop() {
+    const r = sendBtn.getBoundingClientRect();
+    reactPop.classList.add('open');
+    syncComposerHistory();
+    const w = reactPop.offsetWidth, h = reactPop.offsetHeight;
+    let left = r.right - w; if (left < 8) left = 8;
+    reactPop.style.left = left + 'px';
+    reactPop.style.top = Math.max(8, r.top - h - 10) + 'px';
+    rpOpen = true;
+  }
+  function closeReactPop() { reactPop.classList.remove('open'); rpOpen = false; syncComposerHistory(); }
+  function likeModeNow() {
+    return !sendBtn.classList.contains('isSend') && messagingEnabled && !!convId && !editingId && !pendingAttach;
+  }
+  function rpStart() {
+    rpFired = false;
+    clearTimeout(rpTimer);
+    if (!likeModeNow()) return;
+    rpTimer = setTimeout(() => { rpFired = true; openReactPop(); }, 420);
+  }
+  function rpCancel() { clearTimeout(rpTimer); }
+  sendBtn.addEventListener('touchstart', rpStart, { passive: true });
+  sendBtn.addEventListener('touchend', rpCancel);
+  sendBtn.addEventListener('touchmove', rpCancel, { passive: true });
+  sendBtn.addEventListener('touchcancel', rpCancel);
+  sendBtn.addEventListener('mousedown', rpStart);
+  sendBtn.addEventListener('mouseup', rpCancel);
+  sendBtn.addEventListener('mouseleave', rpCancel);
+  sendBtn.addEventListener('contextmenu', ev => ev.preventDefault());
+  // লং-প্রেসের পর আঙুল ছাড়লে যেন সাধারণ লাইক চলে না যায়
+  sendBtn.addEventListener('click', ev => {
+    if (rpFired) { rpFired = false; ev.stopImmediatePropagation(); ev.preventDefault(); }
+  }, true);
+  document.addEventListener('touchstart', ev => { if (rpOpen && !reactPop.contains(ev.target) && ev.target !== sendBtn) closeReactPop(); }, { passive: true });
+  document.addEventListener('mousedown', ev => { if (rpOpen && !reactPop.contains(ev.target) && ev.target !== sendBtn) closeReactPop(); });
+
+  // ================= পুল-টু-রিফ্রেশ =================
+  (function () {
+    const ptr = document.getElementById('ptr');
+    const SKIP = '#callScreen,#incomingCall,#imgViewer,#ctxBackdrop,#stickerPanel,#permSheet,#reactPop,textarea,input,select';
+    const TRIGGER = 64, MAXPULL = 110;
+    let startY = 0, startX = 0, pulling = false, armed = false, busy = false, pull = 0;
+    function visible(id) { const e = document.getElementById(id); return !!e && getComputedStyle(e).display !== 'none'; }
+    function canStart(t) {
+      if (busy || !t || !t.closest) return false;
+      if (t.closest(SKIP)) return false;
+      if (visible('callScreen') || visible('incomingCall') || visible('permSheet')) return false;   // কল চলাকালীন রিফ্রেশ নয়
+      for (let el = t; el && el !== document.body && el !== document.documentElement; el = el.parentElement) {
+        const cs = getComputedStyle(el);
+        if ((cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 1 && el.scrollTop > 0) return false;
+      }
+      return (window.scrollY || 0) <= 0;
+    }
+    function paint(y) {
+      ptr.style.transition = 'none';
+      ptr.style.opacity = Math.min(1, y / 40);
+      ptr.style.transform = 'translate(-50%,' + (y - 56) + 'px) rotate(' + (y * 4) + 'deg)';
+    }
+    document.addEventListener('touchstart', ev => {
+      armed = false; pulling = false;
+      if (ev.touches.length !== 1 || !canStart(ev.target)) return;
+      startY = ev.touches[0].clientY; startX = ev.touches[0].clientX; armed = true; pull = 0;
+    }, { passive: true });
+    document.addEventListener('touchmove', ev => {
+      if (!armed) return;
+      const dy = ev.touches[0].clientY - startY, dx = Math.abs(ev.touches[0].clientX - startX);
+      if (!pulling) {
+        if (dy < -6 || dx > dy) { if (dy < -6) armed = false; return; }   // উপরে স্ক্রল / পাশে সোয়াইপ — বাতিল
+        if (dy < 10) return;
+        pulling = true;
+      }
+      pull = Math.min(MAXPULL, dy * 0.5);
+      paint(pull);
+    }, { passive: true });
+    function end() {
+      if (!pulling) { armed = false; return; }
+      pulling = false; armed = false;
+      if (pull >= TRIGGER * 0.5 && !busy) {
+        busy = true;
+        ptr.classList.add('spin');
+        ptr.style.transition = 'transform .15s';
+        ptr.style.opacity = 1;
+        ptr.style.transform = 'translate(-50%,24px)';
+        setTimeout(() => { location.reload(); }, 450);
+      } else {
+        ptr.style.transition = 'transform .2s, opacity .2s';
+        ptr.style.opacity = 0;
+        ptr.style.transform = 'translate(-50%,-70px)';
+      }
+    }
+    document.addEventListener('touchend', end);
+    document.addEventListener('touchcancel', end);
+  })();
+
+  // ================= WebRTC অডিও/ভিডিও কল =================
+  // সিগন্যালিং: Firestore `calls/{callId}` (offer/answer) + সাবকালেকশন callerCandidates / calleeCandidates (ICE)
+  // মিডিয়া: সরাসরি দুই ডিভাইসের মধ্যে (peer-to-peer), সার্ভারে যায় না
+  // ExpressTURN (ফ্রি) — শুধু পাসওয়ার্ডটা নিচে বসাতে হবে
+  const TURN_USERNAME = '000000002105227413';
+  const TURN_PASSWORD = 'YOzZ+Oyv+iOjhrxS78Z91FkkueM=';   // ExpressTURN পাসওয়ার্ড (Refresh Credentials চাপলে বদলে যাবে — তখন এখানে নতুনটা বসাতে হবে)
+  const ICE_SERVERS = [
+    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }
+  ];
+  if (TURN_PASSWORD && !TURN_PASSWORD.includes('এখানে_পাসওয়ার্ড')) {
+    ICE_SERVERS.push({
+      urls: ['turn:free.expressturn.com:3478', 'turn:free.expressturn.com:3478?transport=tcp'],
+      username: TURN_USERNAME,
+      credential: TURN_PASSWORD
+    });
+  }
+  const RING_TIMEOUT_MS = 45000;
+  const CONNECT_TIMEOUT_MS = 30000;
+  const END_MSG = {
+    declined: 'কল রিজেক্ট করা হয়েছে', busy: 'ব্যস্ত আছেন', ended: 'কল শেষ হয়েছে',
+    canceled: 'কল বাতিল হয়েছে', missed: 'কেউ ধরেননি'
+  };
+
+  const callBtns = document.getElementById('callBtns');
+  const audioCallBtn = document.getElementById('audioCallBtn');
+  const videoCallBtn = document.getElementById('videoCallBtn');
+  const callScreen = document.getElementById('callScreen');
+  const remoteVideo = document.getElementById('remoteVideo');
+  const localVideo = document.getElementById('localVideo');
+  const callAvatar = document.getElementById('callAvatar');
+  const callName = document.getElementById('callName');
+  const callStatus = document.getElementById('callStatus');
+  const micBtn = document.getElementById('micBtn');
+  const camBtn = document.getElementById('camBtn');
+  const camWrap = document.getElementById('camWrap');
+  const flipBtn = document.getElementById('flipBtn');
+  const flipWrap = document.getElementById('flipWrap');
+  const endBtn = document.getElementById('endBtn');
+  const micLabel = document.getElementById('micLabel');
+  const speakerBtn = document.getElementById('speakerBtn');
+  const speakerLabel = document.getElementById('speakerLabel');
+  const MIC_ON_SVG = micBtn.innerHTML;
+  const MIC_OFF_SVG = '<svg viewBox="0 0 24 24"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+  const PHONE_SVG = '<svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+  const VIDEO_SVG = '<svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>';
+  const incomingCall = document.getElementById('incomingCall');
+  const incAvatar = document.getElementById('incAvatar');
+  const incName = document.getElementById('incName');
+  const incType = document.getElementById('incType');
+  const incAccept = document.getElementById('incAccept');
+  const incDecline = document.getElementById('incDecline');
+
+  let call = null;          // চলমান কল
+  let incoming = null;      // যে কল বাজছে (ধরা হয়নি)
+  let unsubIncoming = null;
+  let ringInt = null, wakeLock = null;
+
+  function newCall(role, type) {
+    return { role, type, ref: null, pc: null, localStream: null, unsubs: [], pending: [], queued: [],
+      sigReady: false, answerSet: false, docCreated: false, ended: false, connectedOnce: false,
+      facing: 'user', ringT: null, discT: null, durInt: null, startedAt: 0,
+      peerUid: '', peerName: '', peerPhoto: '', logged: false, loud: false };
+  }
+
+  function bnDuration(sec) {
+    const m = Math.floor(sec / 60), s = sec % 60;
+    return bn(String(m).padStart(2, '0')) + ':' + bn(String(s).padStart(2, '0'));
+  }
+  function setCallStatus(t) { if (call) callStatus.textContent = t; }
+
+  function showCallScreen(name, photo, type, status) {
+    callScreen.className = type === 'video' ? 'video' : '';
+    callAvatar.innerHTML = avatarHtml(photo, name, 'xl');
+    callName.textContent = name;
+    callStatus.textContent = status;
+    camWrap.style.display = flipWrap.style.display = type === 'video' ? 'flex' : 'none';
+    localVideo.style.display = type === 'video' ? 'block' : 'none';
+    localVideo.style.transform = 'scaleX(-1)';
+    micBtn.classList.remove('off'); camBtn.classList.remove('off');
+    setMicUI(false); setSpeakerUI(false); stopLoudBoost();
+    callScreen.style.display = 'flex';
+  }
+  function hideCallScreen() { callScreen.style.display = 'none'; callScreen.className = ''; }
+
+  async function takeWakeLock() { try { if (navigator.wakeLock) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {} }
+  function releaseWakeLock() { try { if (wakeLock) wakeLock.release(); } catch (e) {} wakeLock = null; }
+
+  function mediaError(e) {
+    const n = e && e.name;
+    if (n === 'NotAllowedError' || n === 'SecurityError') openPermSheet();
+    else if (n === 'NotFoundError') alert('মাইক্রোফোন বা ক্যামেরা পাওয়া যায়নি।');
+    else alert('মাইক্রোফোন/ক্যামেরা চালু করা যায়নি: ' + ((e && e.message) || e));
+  }
+  function callSupported() {
+    if (!window.RTCPeerConnection || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('এই ব্রাউজারে কল সাপোর্ট করে না (HTTPS লাগবে)।');
+      return false;
+    }
+    return true;
+  }
+  function getMedia(type, facing) {
+    return navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      video: type === 'video' ? { facingMode: facing || 'user', width: { ideal: 1280 }, height: { ideal: 720 } } : false
+    });
+  }
+
+  // ---------- ringtone (কোনো অডিও ফাইল লাগে না) ----------
+  // ব্রাউজার ইউজারের ট্যাপ ছাড়া শব্দ বাজাতে দেয় না — তাই পেইজে প্রথম যেকোনো ট্যাপেই অডিও "আনলক" করে রাখা হয়
+  let audioCtx = null;
+  function getAudioCtx() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    } catch (e) { return null; }
+  }
+  function unlockAudio() {
+    const c = getAudioCtx();
+    if (!c) return;
+    if (c.state === 'suspended') c.resume().catch(() => {});
+    try {  // iOS/Safari আনলক করার জন্য নিঃশব্দ একটা বাফার
+      const src = c.createBufferSource();
+      src.buffer = c.createBuffer(1, 1, 22050);
+      src.connect(c.destination);
+      src.start(0);
+    } catch (e) {}
+  }
+  ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(ev =>
+    document.addEventListener(ev, unlockAudio, { passive: true }));
+
+  function tone(freq, startAt, dur, vol) {
+    const c = getAudioCtx();
+    if (!c) return;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = 'sine';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, startAt);
+    g.gain.exponentialRampToValueAtTime(vol, startAt + 0.03);
+    g.gain.setValueAtTime(vol, startAt + dur - 0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001, startAt + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(startAt); o.stop(startAt + dur + 0.02);
+  }
+  // kind = 'ring' → যে কল পাচ্ছে তার রিংটোন (জোরে + ভাইব্রেশন); 'back' → যে কল করছে তার "রিং হচ্ছে" টোন (আস্তে)
+  function startRing(kind) {
+    stopRing();
+    const play = () => {
+      const c = getAudioCtx();
+      if (c) {
+        if (c.state === 'suspended') c.resume().catch(() => {});
+        const t = c.currentTime + 0.05;
+        if (kind === 'back') { tone(425, t, 1.0, 0.12); }
+        else { tone(440, t, 0.4, 0.35); tone(480, t, 0.4, 0.35); tone(440, t + 0.6, 0.4, 0.35); tone(480, t + 0.6, 0.4, 0.35); }
+      }
+      if (kind !== 'back') { try { if (navigator.vibrate) navigator.vibrate([400, 200, 400]); } catch (e) {} }
+    };
+    play();
+    ringInt = setInterval(play, kind === 'back' ? 3000 : 2500);
+  }
+  function stopRing() {
+    if (ringInt) { clearInterval(ringInt); ringInt = null; }
+    try { if (navigator.vibrate) navigator.vibrate(0); } catch (e) {}
+  }
+
+  // ---------- পিয়ার কানেকশন ----------
+  function candidatesCol(c, mine) {
+    const callerSide = (c.role === 'caller') === mine;
+    return collection(c.ref, callerSide ? 'callerCandidates' : 'calleeCandidates');
+  }
+  function flushQueued(c) {
+    const q = c.queued; c.queued = [];
+    q.forEach(d => addDoc(candidatesCol(c, true), d).catch(() => {}));
+  }
+  function addRemoteCandidate(c, data) {
+    if (c.ended || !c.pc) return;
+    if (c.pc.remoteDescription) c.pc.addIceCandidate(data).catch(() => {});
+    else c.pending.push(data);
+  }
+  function flushPending(c) {
+    const p = c.pending; c.pending = [];
+    p.forEach(d => c.pc.addIceCandidate(d).catch(() => {}));
+  }
+  function armConnectTimeout(c) {
+    clearTimeout(c.ringT);
+    c.ringT = setTimeout(() => {
+      if (call === c && !c.connectedOnce) {
+        if (c.docCreated) updateDoc(c.ref, { status: 'ended', endedAt: serverTimestamp() }).catch(() => {});
+        finishCall('সংযোগ করা যায়নি');
+      }
+    }, CONNECT_TIMEOUT_MS);
+  }
+  function onConnected(c) {
+    if (c.connectedOnce || c.ended) return;
+    c.connectedOnce = true;
+    clearTimeout(c.ringT);
+    c.startedAt = Date.now();
+    callStatus.textContent = bnDuration(0);
+    c.durInt = setInterval(() => {
+      if (call === c) callStatus.textContent = bnDuration(Math.floor((Date.now() - c.startedAt) / 1000));
+    }, 1000);
+    startCallDiag(c);
+  }
+  // কলের স্ক্রিনে ছোট ডায়াগনস্টিক লাইন: আপনার মাইকের আওয়াজ ধরা পড়ছে কি, পাঠানো/আসা ডেটা চলছে কি
+  function startCallDiag(c) {
+    let el = document.getElementById('callDiag');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'callDiag';
+      el.style.cssText = 'font-size:12px;color:#ffffff;opacity:.85;margin-top:6px;max-width:92%;line-height:1.6';
+      callStatus.parentNode.appendChild(el);
+    }
+    el.textContent = '';
+    let lastOut = 0, lastIn = 0;
+    const lv = [];
+    clearInterval(c.diagInt);
+    c.diagInt = setInterval(async () => {
+      if (c.ended || call !== c || !c.pc) { clearInterval(c.diagInt); el.textContent = ''; return; }
+      try {
+        const rep = await c.pc.getStats();
+        let out = 0, inn = 0, lvl = -1;
+        rep.forEach(r => {
+          if (r.type === 'outbound-rtp' && r.kind === 'audio') out = r.bytesSent || 0;
+          else if (r.type === 'inbound-rtp' && r.kind === 'audio') inn = r.bytesReceived || 0;
+          else if (r.type === 'media-source' && r.kind === 'audio' && typeof r.audioLevel === 'number') lvl = r.audioLevel;
+        });
+        const sendOk = out > lastOut, recvOk = inn > lastIn;
+        lastOut = out; lastIn = inn;
+        if (lvl >= 0) { lv.push(lvl); if (lv.length > 6) lv.shift(); }
+        const heard = lv.length && Math.max.apply(null, lv) > 0.01;
+        const t = c.localStream && c.localStream.getAudioTracks()[0];
+        let line = '🎤 আপনার আওয়াজ: ' + (heard ? '✓ ধরা পড়ছে' : '— নেই (কথা বললে ✓ আসবে)')
+          + '  |  📤 যাচ্ছে: ' + (sendOk ? '✓' : '✗') + '  |  🔊 আসছে: ' + (recvOk ? '✓' : '✗');
+        if (t && (t.muted || t.readyState !== 'live')) line += '\n⚠ আপনার মাইক ব্লক হয়ে আছে — অন্য অ্যাপ (Messenger ইত্যাদি) মাইক ধরে রাখলে এমন হয়, সেগুলো বন্ধ করুন';
+        el.style.whiteSpace = 'pre-line';
+        el.textContent = line;
+      } catch (e) {}
+    }, 1000);
+  }
+  // ওপাশের আওয়াজ চালু নিশ্চিত করা: কিছু ব্রাউজার (বিশেষ করে iPhone/Safari) নিজে নিজে আসা আওয়াজ বাজাতে দেয় না
+  function ensureRemotePlay(c) {
+    const tryPlay = () => {
+      if (!c || c.ended || call !== c) return;
+      try { const ac = getAudioCtx(); if (ac && ac.state === 'suspended') ac.resume().catch(() => {}); } catch (e) {}
+      if (remoteVideo.srcObject && remoteVideo.paused) remoteVideo.play().catch(() => {});
+    };
+    tryPlay();
+    // ট্যাপ করলেই আবার চেষ্টা (ব্রাউজার ইউজারের ট্যাপ ছাড়া অডিও বাজাতে না দিলে এটাই চালু করে)
+    const onTap = () => { tryPlay(); if (!remoteVideo.paused) cleanup(); };
+    const cleanup = () => {
+      ['pointerdown', 'touchstart', 'click'].forEach(ev => callScreen.removeEventListener(ev, onTap));
+      clearInterval(c.playInt);
+    };
+    ['pointerdown', 'touchstart', 'click'].forEach(ev => callScreen.addEventListener(ev, onTap, { passive: true }));
+    clearInterval(c.playInt);
+    let n = 0;
+    c.playInt = setInterval(() => {         // প্রথম ~২০ সেকেন্ড প্রতি ১ সেকেন্ডে চেক
+      n++;
+      if (c.ended || call !== c || n > 20) { cleanup(); return; }
+      tryPlay();
+      if (!remoteVideo.paused && n > 3) cleanup();
+    }, 1000);
+  }
+  function createPeer(c) {
+    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    c.pc = pc;
+    pc.onicecandidate = e => {
+      if (!e.candidate) return;
+      const data = e.candidate.toJSON();
+      if (c.sigReady) addDoc(candidatesCol(c, true), data).catch(() => {});
+      else c.queued.push(data);
+    };
+    pc.ontrack = e => {
+      if (e.streams && e.streams[0]) remoteVideo.srcObject = e.streams[0];
+      remoteVideo.muted = !!(loudNodes);   // স্পিকার-বুস্ট চালু না থাকলে ওপাশের আওয়াজ কখনো মিউট থাকবে না
+      remoteVideo.volume = 1;
+      ensureRemotePlay(c);                 // ব্রাউজার আওয়াজ আটকে দিলে ট্যাপ/রিট্রাইয়ে জোর করে চালু করবে
+      if (c.loud) applyLoud(c);
+      if (e.track.kind === 'video') {
+        const show = () => callScreen.classList.add('hasRemote');
+        if (!e.track.muted) show(); else e.track.addEventListener('unmute', show, { once: true });
+      }
+    };
+    pc.onconnectionstatechange = () => {
+      if (c.ended) return;
+      const st = pc.connectionState;
+      if (st === 'connected') { clearTimeout(c.discT); onConnected(c); }
+      else if (st === 'disconnected') {
+        setCallStatus('সংযোগ দুর্বল...');
+        clearTimeout(c.discT);
+        c.discT = setTimeout(() => { if (call === c && pc.connectionState !== 'connected') hangup('সংযোগ বিচ্ছিন্ন হয়েছে'); }, 8000);
+      } else if (st === 'failed') hangup('সংযোগ করা যায়নি');
+    };
+    c.localStream.getTracks().forEach(t => pc.addTrack(t, c.localStream));
+    localVideo.srcObject = c.localStream;
+    return pc;
+  }
+  function watchCall(c) {
+    c.unsubs.push(onSnapshot(c.ref, async s => {
+      if (c.ended || !s.exists()) return;
+      const d = s.data();
+      if (c.role === 'caller' && d.answer && !c.answerSet) {
+        c.answerSet = true;
+        stopRing();
+        try {
+          await c.pc.setRemoteDescription(d.answer);
+          flushPending(c);
+          setCallStatus('কানেক্ট হচ্ছে...');
+          armConnectTimeout(c);
+        } catch (e) { console.error('answer সেট এরর:', e); }
+      }
+      if (c.role === 'caller' && !c.answerSet && !c.connectedOnce && !c.ended) {
+        if (d.status === 'declined') logCallMessage(c, 'declined');
+        else if (d.status === 'busy') logCallMessage(c, 'busy');
+      }
+      const msg = END_MSG[d.status];
+      if (msg && !c.ended) finishCall(msg);
+    }, err => console.error('কল স্ট্যাটাস এরর:', err)));
+    c.unsubs.push(onSnapshot(candidatesCol(c, false), s => {
+      s.docChanges().forEach(ch => { if (ch.type === 'added') addRemoteCandidate(c, ch.doc.data()); });
+    }, err => console.error('ICE শোনা এরর:', err)));
+  }
+
+  // ---------- কল শেষ (লোকাল ক্লিনআপ) ----------
+  function finishCall(msg) {
+    const c = call;
+    if (!c) return;
+    call = null;
+    c.ended = true;
+    c.unsubs.forEach(u => { try { u(); } catch (e) {} });
+    c.unsubs = [];
+    clearTimeout(c.ringT); clearTimeout(c.discT); clearInterval(c.durInt); clearInterval(c.playInt); clearInterval(c.diagInt);
+    try { if (c.localStream) c.localStream.getTracks().forEach(t => t.stop()); } catch (e) {}
+    try { if (c.pc) c.pc.close(); } catch (e) {}
+    remoteVideo.srcObject = null; localVideo.srcObject = null;
+    releaseWakeLock();
+    stopRing();
+    stopLoudBoost(); resetOutput();
+    callStatus.textContent = msg || 'কল শেষ হয়েছে';
+    { const dg = document.getElementById('callDiag'); if (dg) dg.textContent = ''; }
+    setTimeout(() => { if (!call) hideCallScreen(); }, 1200);
+  }
+  function hangup(msg) {
+    const c = call;
+    if (!c) return;
+    if (c.docCreated) {
+      const status = (c.role === 'caller' && !c.answerSet) ? 'canceled' : 'ended';
+      updateDoc(c.ref, { status, endedAt: serverTimestamp() }).catch(() => {});
+      if (status === 'canceled') logCallMessage(c, 'canceled');
+    }
+    finishCall(typeof msg === 'string' ? msg : 'কল শেষ হয়েছে');
+  }
+
+  // ---------- কল লগ: চ্যাটে "মিস কল" / "কল দেওয়া হয়েছিল" মেসেজ (কলার লিখে রাখে, দুইজনেই দেখে) ----------
+  async function logCallMessage(c, status) {
+    if (!c || c.logged || c.role !== 'caller' || !currentUser || !c.peerUid) return;
+    c.logged = true;
+    const kind = c.type === 'video' ? 'ভিডিও' : 'অডিও';
+    const icon = c.type === 'video' ? '📹' : '📞';
+    const preview = status === 'declined' ? icon + ' ' + kind + ' কল (রিজেক্ট)' : icon + ' ' + kind + ' মিস কল';
+    const me = currentUser.uid;
+    const myInfo = { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' };
+    try {
+      const cid = makeConvId(me, c.peerUid);
+      const cRef = doc(db, "conversations", cid);
+      const snap = await getDoc(cRef);
+      if (!snap.exists()) {
+        await setDoc(cRef, {
+          participants: [me, c.peerUid].sort(),
+          participantInfo: { [me]: myInfo, [c.peerUid]: { name: c.peerName || 'ব্যবহারকারী', photoURL: c.peerPhoto || '' } },
+          createdAt: serverTimestamp(),
+          lastMessage: preview,
+          lastMessageAt: serverTimestamp(),
+          lastSenderUid: me,
+          [`lastRead.${me}`]: serverTimestamp()
+        });
+      } else {
+        await updateDoc(cRef, {
+          lastMessage: preview,
+          lastMessageAt: serverTimestamp(),
+          lastSenderUid: me,
+          [`lastRead.${me}`]: serverTimestamp(),
+          [`participantInfo.${me}`]: myInfo
+        });
+      }
+      if (convId === cid) convExists = true;
+      await addDoc(collection(cRef, "messages"), {
+        senderUid: me,
+        text: preview,
+        type: 'call',
+        callType: c.type === 'video' ? 'video' : 'audio',
+        callStatus: status,
+        callId: c.ref ? c.ref.id : '',
+        createdAt: serverTimestamp()
+      });
+      if (status === 'missed' || status === 'canceled') { try { window.OnuNotify && window.OnuNotify.missedCall(c.peerUid, c.type); } catch (_) {} }
+    } catch (e) {
+      console.error('কল লগ লেখা যায়নি:', e);
+    }
+  }
+  function callLogInfo(m, mine) {
+    const kind = m.callType === 'video' ? 'ভিডিও' : 'অডিও';
+    const st = m.callStatus;
+    if (mine) {
+      const why = st === 'declined' ? 'রিজেক্ট করা হয়েছে' : st === 'busy' ? 'ব্যস্ত ছিলেন' : st === 'canceled' ? 'আপনি কেটে দিয়েছেন' : 'কেউ ধরেননি';
+      return { title: 'আপনি ' + kind + ' কল দিয়েছিলেন', sub: why, missed: false };
+    }
+    if (st === 'declined') return { title: kind + ' কল', sub: 'আপনি রিজেক্ট করেছেন', missed: false };
+    return { title: kind + ' মিস কল', sub: (otherName || 'ব্যবহারকারী') + ' কল দিয়েছিলেন', missed: true };
+  }
+  function buildCallLogRow(m, mine) {
+    const info = callLogInfo(m, mine);
+    const t = timeAgo(m.createdAt);
+    const sub = [info.sub, t].filter(Boolean).join(' · ');
+    const row = document.createElement('div');
+    row.className = 'callLogRow';
+    row.innerHTML = `
+      <div class="callLog${info.missed ? ' missed' : ''}">
+        <div class="clTop">
+          <div class="clIcon">${m.callType === 'video' ? VIDEO_SVG : PHONE_SVG}</div>
+          <div class="clText">
+            <div class="clTitle">${escapeHtml(info.title)}</div>
+            <div class="clSub">${escapeHtml(sub)}</div>
+          </div>
+        </div>
+        <div class="clBtns">
+          <button class="clBtn" data-t="audio">${PHONE_SVG} অডিও কল</button>
+          <button class="clBtn" data-t="video">${VIDEO_SVG} ভিডিও কল</button>
+        </div>
+      </div>`;
+    row.querySelectorAll('.clBtn').forEach(b => {
+      b.disabled = !messagingEnabled;
+      b.addEventListener('click', () => startOutgoingCall(b.dataset.t));
+    });
+    return row;
+  }
+
+  // ---------- লাউডস্পিকার (জোরে শোনা) ও মিউট UI ----------
+  // স্পিকার অন = (১) সম্ভব হলে ফোনের স্পিকার ডিভাইসে আউটপুট (২) ওপাশের আওয়াজ ২.২ গুণ জোরে (Web Audio)
+  let loudNodes = null;
+  let outputChanged = false;
+  function setMicUI(muted) {
+    micBtn.innerHTML = muted ? MIC_OFF_SVG : MIC_ON_SVG;
+    micLabel.textContent = muted ? 'আনমিউট' : 'মিউট';
+  }
+  function setSpeakerUI(on) {
+    speakerBtn.classList.toggle('on', !!on);
+    speakerLabel.textContent = on ? 'স্পিকার চালু' : 'স্পিকার';
+  }
+  function stopLoudBoost() {
+    if (loudNodes) {
+      try { loudNodes.src.disconnect(); loudNodes.gain.disconnect(); loudNodes.comp.disconnect(); } catch (e) {}
+      loudNodes = null;
+    }
+    remoteVideo.muted = false;
+  }
+  function startLoudBoost() {
+    const stream = remoteVideo.srcObject;
+    const ctx = getAudioCtx();
+    if (!stream || !ctx) return false;
+    const track = stream.getAudioTracks()[0];
+    if (!track) return false;
+    if (loudNodes && loudNodes.stream === stream && loudNodes.track === track) return true;
+    stopLoudBoost();
+    try {
+      if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+      if (ctx.state !== 'running') return false;      // অডিও সিস্টেম চালু না থাকলে ভিডিও এলিমেন্ট মিউট করা হবে না (যাতে আওয়াজ কখনো বন্ধ না হয়)
+      const src = ctx.createMediaStreamSource(stream);
+      const gain = ctx.createGain(); gain.gain.value = 2.2;
+      const comp = ctx.createDynamicsCompressor();      // বেশি জোরে হলে ফাটা আওয়াজ ঠেকায়
+      src.connect(gain); gain.connect(comp); comp.connect(ctx.destination);
+      remoteVideo.muted = true;
+      loudNodes = { src, gain, comp, stream, track };
+      return true;
+    } catch (e) { stopLoudBoost(); return false; }
+  }
+  async function routeOutput(on) {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+      const devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'audiooutput');
+      const target = on
+        ? devs.find(d => /speaker/i.test(d.label) && !/head|ear|bluetooth/i.test(d.label))
+        : devs.find(d => /earpiece|receiver/i.test(d.label));
+      if (!target) return;                              // আলাদা ডিভাইস না পেলে রাউটিং বদলানো হয় না
+      if (remoteVideo.setSinkId) await remoteVideo.setSinkId(target.deviceId);
+      if (audioCtx && audioCtx.setSinkId) await audioCtx.setSinkId(target.deviceId);
+      outputChanged = true;
+    } catch (e) {}
+  }
+  function resetOutput() {
+    if (!outputChanged) return;
+    outputChanged = false;
+    try { if (remoteVideo.setSinkId) remoteVideo.setSinkId('').catch(() => {}); } catch (e) {}
+    try { if (audioCtx && audioCtx.setSinkId) audioCtx.setSinkId('').catch(() => {}); } catch (e) {}
+  }
+  async function applyLoud(c) {
+    if (!c || call !== c) return;
+    if (c.loud) { startLoudBoost(); await routeOutput(true); }
+    else { stopLoudBoost(); await routeOutput(false); }
+  }
+
+  // ---------- আউটগোয়িং কল ----------
+  async function startOutgoingCall(type) {
+    if (call || incoming) { alert('আরেকটি কল চলছে।'); return; }
+    if (!currentUser || !otherUid || !messagingEnabled) return;
+    if (fcIsBlocked(otherUid)) { fcToast('You blocked this person.'); return; }
+    if (!callSupported()) return;
+    const c = newCall('caller', type);
+    c.peerUid = otherUid; c.peerName = otherName; c.peerPhoto = otherPhoto;
+    call = c;
+    showCallScreen(otherName, otherPhoto, type, 'কল করা হচ্ছে...');
+    try {
+      const stream = await getMedia(type, c.facing);
+      if (c.ended) { stream.getTracks().forEach(t => t.stop()); return; }
+      c.localStream = stream;
+    } catch (e) { mediaError(e); finishCall(''); hideCallScreen(); return; }
+
+    try {
+      c.ref = doc(collection(db, 'calls'));
+      const pc = createPeer(c);
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      if (c.ended) return;
+      await setDoc(c.ref, {
+        callerUid: currentUser.uid, calleeUid: otherUid,
+        callerName: myProfile.name || 'ব্যবহারকারী', callerPhoto: myProfile.photoURL || '',
+        calleeName: otherName, type, status: 'ringing',
+        offer: { type: offer.type, sdp: offer.sdp },
+        createdAt: serverTimestamp()
+      });
+      c.docCreated = true;
+      if (c.ended) { updateDoc(c.ref, { status: 'canceled', endedAt: serverTimestamp() }).catch(() => {}); logCallMessage(c, 'canceled'); return; }
+      c.sigReady = true;
+      flushQueued(c);
+      watchCall(c);
+      takeWakeLock();
+      setCallStatus('রিং হচ্ছে...');
+      startRing('back');
+      c.ringT = setTimeout(() => {
+        if (call === c && !c.answerSet) {
+          updateDoc(c.ref, { status: 'missed' }).catch(() => {});
+          logCallMessage(c, 'missed');
+          finishCall('কেউ ধরেননি');
+        }
+      }, RING_TIMEOUT_MS);
+    } catch (e) {
+      console.error('কল শুরু করা যায়নি:', e);
+      finishCall('কল করা যায়নি: ' + (e && e.message ? e.message : e));
+    }
+  }
+
+  // ---------- ইনকামিং কল ----------
+  function stopIncomingListener() { if (unsubIncoming) { unsubIncoming(); unsubIncoming = null; } }
+  function startIncomingListener() {
+    stopIncomingListener();
+    const q = query(collection(db, 'calls'),
+      where('calleeUid', '==', currentUser.uid), where('status', '==', 'ringing'));
+    unsubIncoming = onSnapshot(q, s => {
+      s.docChanges().forEach(ch => {
+        if (ch.type === 'added') onRing(ch.doc);
+        else if (ch.type === 'removed') { if (incoming && incoming.id === ch.doc.id) dismissIncoming(); }
+      });
+    }, err => console.error('ইনকামিং কল শোনা যাচ্ছে না (Firestore Rules চেক করুন):', err));
+  }
+  function onRing(docSnap) {
+    const d = docSnap.data();
+    if (fcIsBlocked(d.callerUid)) { updateDoc(docSnap.ref, { status: 'declined' }).catch(() => {}); return; }   // ব্লক করা ব্যক্তির কল ধরা হয় না
+    if (incoming && incoming.id === docSnap.id) return;
+    const created = d.createdAt && d.createdAt.toMillis ? d.createdAt.toMillis() : Date.now();
+    if (Date.now() - created > 75000) return;              // পুরনো/আটকে থাকা রিং
+    if (call || incoming) { updateDoc(docSnap.ref, { status: 'busy' }).catch(() => {}); return; }
+    incoming = { id: docSnap.id, ref: docSnap.ref, data: d, timer: null };
+    incAvatar.innerHTML = avatarHtml(d.callerPhoto || '', d.callerName || '', 'xl');
+    incName.textContent = d.callerName || 'ব্যবহারকারী';
+    incType.textContent = d.type === 'video' ? '📹 ভিডিও কল আসছে...' : '📞 অডিও কল আসছে...';
+    incomingCall.style.display = 'flex';
+    startRing('ring');
+    incoming.timer = setTimeout(dismissIncoming, 50000);
+  }
+  function dismissIncoming() {
+    if (incoming) clearTimeout(incoming.timer);
+    incoming = null;
+    stopRing();
+    incomingCall.style.display = 'none';
+  }
+  async function declineIncoming() {
+    const inc = incoming;
+    if (!inc) return;
+    dismissIncoming();
+    updateDoc(inc.ref, { status: 'declined', endedAt: serverTimestamp() }).catch(() => {});
+  }
+  async function acceptIncoming() {
+    const inc = incoming;
+    if (!inc || call) return;
+    const d = inc.data;
+    dismissIncoming();
+    if (!callSupported()) { updateDoc(inc.ref, { status: 'declined' }).catch(() => {}); return; }
+    const c = newCall('callee', d.type);
+    c.ref = inc.ref;
+    call = c;
+    showCallScreen(d.callerName || 'ব্যবহারকারী', d.callerPhoto || '', d.type, 'কানেক্ট হচ্ছে...');
+    try {
+      const stream = await getMedia(d.type, c.facing);
+      if (c.ended) { stream.getTracks().forEach(t => t.stop()); return; }
+      c.localStream = stream;
+    } catch (e) {
+      mediaError(e);
+      updateDoc(inc.ref, { status: 'declined' }).catch(() => {});
+      finishCall(''); hideCallScreen();
+      return;
+    }
+    try {
+      const pc = createPeer(c);
+      await pc.setRemoteDescription(d.offer);
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      if (c.ended) return;
+      await updateDoc(c.ref, { status: 'accepted', answer: { type: answer.type, sdp: answer.sdp } });
+      c.docCreated = true;
+      c.answerSet = true;
+      if (c.ended) { updateDoc(c.ref, { status: 'ended', endedAt: serverTimestamp() }).catch(() => {}); return; }
+      c.sigReady = true;
+      flushQueued(c);
+      watchCall(c);      // callerCandidates শুনবে (remoteDescription আগেই সেট, তাই সরাসরি যোগ হবে)
+      takeWakeLock();
+      armConnectTimeout(c);
+    } catch (e) {
+      console.error('কল ধরা যায়নি:', e);
+      updateDoc(inc.ref, { status: 'ended' }).catch(() => {});
+      finishCall('কল ধরা যায়নি');
+    }
+  }
+
+  // ---------- কল কন্ট্রোল ----------
+  micBtn.addEventListener('click', () => {
+    if (!call || !call.localStream) return;
+    const t = call.localStream.getAudioTracks()[0];
+    if (!t) return;
+    t.enabled = !t.enabled;
+    micBtn.classList.toggle('off', !t.enabled);
+    setMicUI(!t.enabled);
+  });
+  speakerBtn.addEventListener('click', () => {
+    const c = call;
+    if (!c) return;
+    c.loud = !c.loud;
+    setSpeakerUI(c.loud);
+    applyLoud(c);
+  });
+  camBtn.addEventListener('click', () => {
+    if (!call || !call.localStream) return;
+    const t = call.localStream.getVideoTracks()[0];
+    if (!t) return;
+    t.enabled = !t.enabled;
+    camBtn.classList.toggle('off', !t.enabled);
+  });
+  flipBtn.addEventListener('click', async () => {
+    const c = call;
+    if (!c || c.type !== 'video' || !c.pc) return;
+    const next = c.facing === 'user' ? 'environment' : 'user';
+    try {
+      const ns = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: next } } });
+      const nt = ns.getVideoTracks()[0];
+      const old = c.localStream.getVideoTracks()[0];
+      nt.enabled = old ? old.enabled : true;
+      const sender = c.pc.getSenders().find(s => s.track && s.track.kind === 'video');
+      if (sender) await sender.replaceTrack(nt);
+      if (old) { old.stop(); c.localStream.removeTrack(old); }
+      c.localStream.addTrack(nt);
+      c.facing = next;
+      localVideo.style.transform = next === 'user' ? 'scaleX(-1)' : 'none';
+    } catch (e) { console.error('ক্যামেরা ঘোরানো যায়নি:', e); }
+  });
+  endBtn.addEventListener('click', () => hangup());
+  audioCallBtn.addEventListener('click', () => startOutgoingCall('audio'));
+  videoCallBtn.addEventListener('click', () => startOutgoingCall('video'));
+  incAccept.addEventListener('click', acceptIncoming);
+  incDecline.addEventListener('click', declineIncoming);
+
+  // ---------- পারমিশন: এক ট্যাপে মাইক + ক্যামেরা ----------
+  // ব্রাউজার নিয়ম: ওয়েবসাইট নিজে অনুমতি "দিয়ে দিতে" পারে না — ইউজারকে Allow চাপতেই হয়।
+  // তাই এখানে দুটো অনুমতি একসাথে (একটা প্রম্পটে) চাওয়া হয়, একবার Allow করলে ব্রাউজার মনে রাখে।
+  const permOpenBtn = document.getElementById('permOpenBtn');
+  const permSheet = document.getElementById('permSheet');
+  const permMicState = document.getElementById('permMicState');
+  const permCamState = document.getElementById('permCamState');
+  const permHelp = document.getElementById('permHelp');
+  const permGrantBtn = document.getElementById('permGrantBtn');
+  const permLaterBtn = document.getElementById('permLaterBtn');
+  const permReloadBtn = document.getElementById('permReloadBtn');
+  const PERM_LABEL = { granted: '✅ দেওয়া আছে', denied: '⛔ ব্লক করা', prompt: '⏳ দেওয়া হয়নি', unknown: '— (চাপলে জানা যাবে)' };
+
+  async function permState(name) {
+    try { return (await navigator.permissions.query({ name })).state; }
+    catch (e) { return 'unknown'; }
+  }
+  async function refreshPermUI() {
+    const mic = await permState('microphone');
+    const cam = await permState('camera');
+    permMicState.textContent = PERM_LABEL[mic] || '—';
+    permCamState.textContent = PERM_LABEL[cam] || '—';
+    const denied = mic === 'denied' || cam === 'denied';
+    permHelp.style.display = denied ? 'block' : 'none';
+    const allOk = mic === 'granted' && cam === 'granted';
+    permOpenBtn.style.display = allOk ? 'none' : 'block';
+    return { mic, cam, allOk, denied };
+  }
+  async function openPermSheet() {
+    permSheet.style.display = 'flex';
+    await refreshPermUI();
+  }
+  function closePermSheet() {
+    permSheet.style.display = 'none';
+    try { localStorage.setItem('permAsked', '1'); } catch (e) {}
+  }
+  // ব্রাউজারের নিজস্ব Allow/Block প্রম্পট দেখায় (একবার দিলে ব্রাউজার মনে রাখে)
+  async function requestMediaPermissions() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return false;
+    let stream = null;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });   // এক প্রম্পটে দুটোই
+    } catch (e) {
+      if (e && (e.name === 'NotFoundError' || e.name === 'OverconstrainedError')) {
+        try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e2) {}   // ক্যামেরা না থাকলে শুধু মাইক
+      }
+    }
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    return !!stream;
+  }
+  async function grantAllPermissions() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('এই ব্রাউজারে কল সাপোর্ট করে না (HTTPS লাগবে)।');
+      return;
+    }
+    permGrantBtn.disabled = true;
+    await requestMediaPermissions();
+    permGrantBtn.disabled = false;
+    const st = await refreshPermUI();
+    try { localStorage.setItem('permAsked', '1'); } catch (e) {}
+    if (st.allOk) setTimeout(closePermSheet, 700);
+  }
+  // পেইজে ঢোকার সাথে সাথে নিজে থেকেই ব্রাউজারের Allow প্রম্পট আসবে — মাঝখানে কোনো কার্ড/বাটন নেই।
+  // আগে থেকে Allow দেওয়া থাকলে কিছুই আসে না। Block করা থাকলে (ব্রাউজার আর প্রম্পট দেখাতে পারে না) তখনই শুধু সাহায্যের কার্ড আসে।
+  async function maybeAskPermissions() {
+    const st = await refreshPermUI();
+    if (st.allOk) return;
+    const showHelpOnce = () => {
+      let shown = false;
+      try { shown = sessionStorage.getItem('permHelpShown') === '1'; } catch (e) {}
+      if (!shown) { try { sessionStorage.setItem('permHelpShown', '1'); } catch (e) {} openPermSheet(); }
+    };
+    if (st.denied) { showHelpOnce(); return; }
+    if (st.mic === 'unknown' || st.cam === 'unknown') {     // পুরনো ব্রাউজার (অবস্থা জানা যায় না) — বারবার বিরক্ত না করতে একবারই
+      let asked = false;
+      try { asked = localStorage.getItem('permAsked') === '1'; } catch (e) {}
+      if (asked) return;
+    }
+    await requestMediaPermissions();
+    try { localStorage.setItem('permAsked', '1'); } catch (e) {}
+    const st2 = await refreshPermUI();
+    if (st2.denied) showHelpOnce();
+  }
+  permGrantBtn.addEventListener('click', grantAllPermissions);
+  permLaterBtn.addEventListener('click', closePermSheet);
+  permReloadBtn.addEventListener('click', () => location.reload());
+  permOpenBtn.addEventListener('click', openPermSheet);
+
+
+  // =====================================================================
+  //  Fill Chat: ভাষা (ইংরেজি/বাংলা), থিম, সাইডবার, সেটিংস, মেসেজ-ব্লক, সাবস্ক্রাইবার ও সার্চ
+  // =====================================================================
+  const FC_D = {"লগ আউট": "Log out", "লগইন": "Log in", "টেক্সট": "Text", "পোস্টার": "Poster", "ফটো": "Photo", "ভয়েস": "Voice", "পোস্ট করুন": "Post", "বাতিল": "Cancel", "লাইক": "Like", "কমেন্ট": "Comment", "রিপ্লাই": "Reply", "শেয়ার": "Share", "সার্চ": "Search", "সেটিংস": "Settings", "আমাদের সম্পর্কে": "About us", "সবগুলো": "All", "পোস্ট": "Posts", "অডিও": "Audio", "আপনার অনুভূতি ব্যক্ত করুন / পোস্ট করুন": "Express your feelings / Post", "আপনার মনে কী চলছে?": "What's on your mind?", "লোড হচ্ছে...": "Loading...", "সাবস্ক্রাইব করুন": "Subscribe", "আনসাবস্ক্রাইব করুন": "Unsubscribe", "সাবস্ক্রাইবার": "Subscribers", "আমার সাবস্ক্রাইবার": "My subscribers", "আমার পোস্ট": "My posts", "ডিলিট করুন": "Delete", "ডিলিট": "Delete", "এডিট করুন": "Edit", "সেভ করুন": "Save", "পাঠান": "Send", "মেসেজ লিখুন...": "Write a message...", "কমেন্ট লিখুন...": "Write a comment...", "নতুন পোস্ট": "New post", "ফিরে যান": "Go back", "এখনো কোনো পোস্ট নেই": "No posts yet", "এখনো কোনো মেসেজ নেই।": "No messages yet.", "এখনো কোনো নোটিফিকেশন নেই।": "No notifications yet.", "কপি": "Copy", "টেক্সট কপি": "Copy text", "ঠিক আছে": "OK", "হ্যাঁ": "Yes", "না": "No", "আবার চেষ্টা করুন।": "Please try again.", "পোস্ট হচ্ছে...": "Posting...", "পোস্ট হয়েছে!": "Posted!", "ভয়েস পোস্ট হয়েছে!": "Voice posted!", "এই মাত্র": "Just now", "মিউট": "Mute", "লিংক কপি": "Copy link", "লিংক কপি হয়েছে": "Link copied", "রিপোর্ট": "Report", "রিপোর্ট পাঠান": "Send report", "নাম": "Name", "বায়ো": "Bio", "যোগদান": "Joined", "অনলাইন আছে": "Online", "নোটিফিকেশন": "Notifications", "মেসেজ": "Messages", "প্রোফাইল": "Profile", "প্রোফাইল এডিট করুন": "Edit profile", "পোস্ট এডিট করুন": "Edit post", "কমেন্ট এডিট করুন": "Edit comment", "পুরো চ্যাট ডিলিট করতে চান? এটা ফিরিয়ে আনা যাবে না।": "Delete the whole chat? This cannot be undone.", "এই পোস্টটি ডিলিট করতে চান?": "Delete this post?", "কমেন্টটি ডিলিট করতে চান?": "Delete this comment?", "মেসেজটি মুছে ফেলতে চান?": "Delete this message?", "আপনি কি সত্যিই লগ আউট করতে চান?": "Do you really want to log out?", "হ্যাঁ, লগ আউট": "Yes, log out", "না, থাক": "No, keep", "সেভ হয়েছে!": "Saved!", "সেভ হচ্ছে...": "Saving...", "আপলোড হচ্ছে...": "Uploading...", "রেকর্ড শুরু করুন": "Start recording", "আরও দেখুন": "See more", "আরও পোস্ট দেখুন": "See more posts", "আরও পড়ুন": "Read more", "ফটোটি বেশি বড়": "Photo is too large", "পোস্ট করা যায়নি": "Could not post", "মেসেজ পাঠানো যায়নি": "Could not send message", "মেসেজ করুন": "Message", "মিস কল": "Missed call", "সব মুছুন": "Clear all", "বন্ধ": "Off", "চালু করুন": "Turn on", "আপনার নাম": "Your name", "পাসওয়ার্ড": "Password", "ইমেইল": "Email", "স্বাগতম": "Welcome", "শেষ হওয়া রেকর্ডিং": "Finished recording", "লোড হচ্ছে": "Loading", "কেন রিপোর্ট করছেন": "Why are you reporting", "কপিরাইট পোস্ট": "Copyright post", "অশ্লীল কন্টেন্ট": "Obscene content", "হিংসাত্মক পোস্ট": "Violent post", "নির্মম কন্টেন্ট": "Cruel content", "পোস্ট, লাইক, কমেন্ট বা রিপ্লাই করতে Google দিয়ে লগইন করুন": "Log in with Google to post, like, comment or reply", "দিয়ে লগইন করুন": "Login", "মেনু": "Menu", "ব্লগ": "Blog", "বড় লেখার জন্য (এভাবে লিখুন) · মাঝারির জন্য {এভাবে লিখুন} · স্বাভাবিকের জন্য [এভাবে লিখুন": "For large text (write like this) · for medium {write like this} · for normal [write like this", "লগ আউট করবেন": "Log out", "আপনি কি সত্যিই লগ আউট করতে চান": "Do you really want to log out", "ভয়েস রেকর্ড": "Voice record", "ভয়েস এডিট": "Voice edit", "শুরু (আগের অংশ কেটে ফেলুন": "Start (trim the part before", "শেষ (পরের অংশ কেটে ফেলুন": "End (trim the part after", "ব্যাকগ্রাউন্ডের অপ্রয়োজনীয় আওয়াজ কমান": "Reduce unnecessary background noise", "হালকা": "Light", "মাঝারি": "Medium", "জোরালো": "Strong", "কথার ফাঁকের আওয়াজ ও গুনগুন শব্দ কমে। কথার সাথে মিশে থাকা অন্য মানুষের কণ্ঠ আলাদা করা যায় না। জোরালো করলে কথার শেষের দিক একটু চাপা হতে পারে — আগে \"শুনে দেখুন\" দিয়ে শুনে নিন": "Reduces noise between words and humming. Other people's voices mixed with speech cannot be separated. A strong setting may slightly muffle the end of speech — first listen with \"Preview\"", "শুনে দেখুন": "Preview", "প্রয়োগ করুন": "Apply", "আবার রেকর্ড": "Record again", "ডাউনলোড করবেন": "Download", "আপনি কি নিশ্চিত যে ডাউনলোড করতে চান": "Are you sure you want to download", "হ্যাঁ, ডাউনলোড": "Yes, download", "আবার Back চাপুন বের হওয়ার জন্য": "Press Back again to exit", "পোস্ট খুঁজুন": "Search posts", "আপনার মনে কী চলছে": "What's on your mind", "শুনুন": "Listen", "ভয়েসের সাথে কিছু লিখুন (ঐচ্ছিক": "Write something with the voice (optional", "পোস্ট বক্সে যান": "Go to post box", "হোম": "Home", "ব্লক করুন": "Block", "রিপোর্টের কারণ লিখুন": "Write the reason for the report", "রিপোর্ট পাঠানো হয়েছে": "Report sent", "এই ব্যবহারকারীকে ব্লক করবেন? আপনি তার কিছুই দেখতে পারবেন না": "Block this user? You will not be able to see anything from them", "আগে লগইন করুন": "Log in first", "কারণ লিখুন": "Write the reason", "এই ব্যবহারকারী পাওয়া যাচ্ছে না": "This user is not available", "মেসেজ লিখুন": "Write a message", "কমেন্ট লিখুন": "Write a comment", "এখনো কোনো মেসেজ নেই": "No messages yet", "এখনো কোনো নোটিফিকেশন নেই": "No notifications yet", "আবার চেষ্টা করুন": "Try again", "পোস্ট হচ্ছে": "Posting", "পোস্ট হয়েছে": "Posted", "ভয়েস পোস্ট হয়েছে": "Voice posted", "পুরো চ্যাট ডিলিট করতে চান? এটা ফিরিয়ে আনা যাবে না": "Delete the whole chat? This cannot be undone", "এই পোস্টটি ডিলিট করতে চান": "Delete this post", "কমেন্টটি ডিলিট করতে চান": "Delete this comment", "মেসেজটি মুছে ফেলতে চান": "Delete this message", "সেভ হয়েছে": "Saved", "সেভ হচ্ছে": "Saving", "আপলোড হচ্ছে": "Uploading", "এই মুহূর্তে কোনো তথ্য যুক্ত করা হয়নি": "No information has been added right now", "পোস্টারের লেখা এখানে দেখাবে": "The poster text will appear here", "দিন": "day", "ঘণ্টা": "hour", "মিনিট": "minute", "লগইন হচ্ছে": "Logging in", "এরর": "Error", "গেজেট স্ক্রিপ্ট চালাতে সমস্যা": "Problem running the gadget script", "আপডেট করুন": "Update", "কিছু লিখুন": "Write something", "পোস্টারের জন্য লেখা দিন": "Enter text for the poster", "ব্লগের লেখা দিন": "Enter text for the blog", "আপডেট হচ্ছে": "Updating", "পোস্ট আপডেট হয়েছে": "Post updated", "সর্বোচ্চ": "Maximum", "মিডিয়া সীমা লোড এরর": "Media limit load error", "ডাউনলোড হচ্ছে": "Downloading", "ডাউনলোড সম্পূর্ণ হয়েছে": "Download complete", "ডাউনলোড শুরু হয়েছে": "Download started", "ডাউনলোড করা যায়নি": "Could not download", "ডাউনলোড": "Download", "শুধু ছবি বাছাই করুন": "Choose images only", "ফটোটি বেশি বড় — সর্বোচ্চ": "The photo is too large — maximum", "শুধু অডিও ফাইল বাছাই করুন": "Choose audio files only", "অডিও ফাইলটি বেশি বড় — সর্বোচ্চ": "The audio file is too large — maximum", "গতি": "Speed", "১০ সেকেন্ড পিছনে": "10 seconds back", "চালান": "Play", "১০ সেকেন্ড সামনে": "10 seconds forward", "বারবার চালান": "Repeat", "ফাইলটি মুছে ফেলা হয়েছে": "The file has been deleted", "থামান": "Stop", "ফটোটি মুছে ফেলা হয়েছে": "The photo has been deleted", "রেকর্ড শুরু করতে মাইক বাটনে চাপুন": "Tap the mic button to start recording", "রেকর্ড হচ্ছে... বিরতি দিতে মাইক বাটনে চাপুন": "Recording... tap the mic button to pause", "বিরতি — মাইকে চাপলে আবার রেকর্ড চলবে। ডানের বাটনে শুনুন, বামে এডিট, নিচের → তে এগিয়ে যান": "Paused — tap the mic to continue recording. Listen with the right button, edit with the left, go ahead with → below", "রেকর্ড প্রস্তুত — শুনুন বা এডিট করুন, তারপর নিচের → তে এগিয়ে যান": "Recording ready — listen or edit, then go ahead with → below", "বিরতি দিন": "Pause", "রেকর্ড শুরু/চালু করুন": "Start/resume recording", "এই ব্রাউজারে ভয়েস রেকর্ড সাপোর্ট করে না": "Voice recording is not supported in this browser", "মাইক্রোফোনের অনুমতি পাওয়া যায়নি। ব্রাউজারের সেটিংস থেকে মাইক্রোফোন চালু করুন": "Microphone permission was not granted. Enable the microphone from the settings", "রেকর্ড শুরু করা যায়নি": "Could not start recording", "রেকর্ডিং খুব ছোট হয়েছে — আবার চেষ্টা করুন": "The recording is too short — try again", "আপনার ভয়েস": "Your voice", "এই ব্রাউজারে এডিট সাপোর্ট করে না": "Editing is not supported in this browser", "এডিট চালু করা যায়নি": "Could not start editing", "প্রস্তুত হচ্ছে": "Preparing", "শোনানো যায়নি": "Could not play", "প্রয়োগ হচ্ছে": "Applying", "এডিট প্রয়োগ হয়েছে": "Edit applied", "এডিট করা যায়নি": "Could not edit", "মিনিট আগে": "min ago", "ঘণ্টা আগে": "h ago", "দিন আগে": "d ago", "বড় লেখার জন্য": "For large text", "এভাবে লিখুন": "write like this", "মাঝারির জন্য": "For medium", "স্বাভাবিকের জন্য": "For normal", "অন্য পোস্টের লিংক যুক্ত করতে": "To add a link to another post, put", "লিংক": "link", "এভাবে বসান": "like this", "এডিট": "Edit", "একটা কারণ বাছাই করুন": "Choose a reason", "মিউজিক": "Music", "রেকর্ড": "Record", "এই ক্যাটাগরিতে কোনো পোস্ট নেই": "There are no posts in this category", "ভালোবাসা": "Love", "হাহা": "Haha", "দুঃখ": "Sad", "রাগ": "Angry", "ওয়াও": "Wow", "ব্যবহারকারী": "User", "প্রতিক্রিয়া": "Reaction", "সব": "All", "এখনো কেউ রিঅ্যাক্ট করেনি": "Nobody has reacted yet", "সংক্ষেপ করুন": "Collapse", "লাইক দেওয়া যায়নি": "Could not like", "কপি হয়েছে": "Copied", "কপি ব্যর্থ হয়েছে": "Copy failed", "কে উত্তর দিচ্ছেন": "Replying to", "উত্তর লিখুন": "Write a reply", "কমেন্ট এরর": "Comment error", "এর মন্তব্যে": "'s comment", "উত্তর দিন": "Reply", "প্রোফাইল দেখতে Google দিয়ে লগইন করুন": "Log in with Google to view the profile", "প্রবেশাধিকার নেই": "No access", "আপনার একাউন্টে প্রবেশাধিকার নেই": "You do not have access to your account", "সাবস্ক্রাইব সংখ্যা": "Subscribe count", "এবাউট": "About", "এখনো কোনো বায়ো লেখা হয়নি": "No bio has been written yet", "আপনি এখনো কোনো পোস্ট করেননি": "You haven't posted anything yet", "এই ব্যবহারকারীর পোস্ট দেখতে হলে আগে সাবস্ক্রাইব করুন": "Subscribe first to see this user's posts", "এখনো কেউ সাবস্ক্রাইব করেননি": "Nobody has subscribed yet", "ইউনিক আইডি": "Unique ID", "যোগদানের তারিখ": "Join date", "দেশ (ঐচ্ছিক": "Country (optional", "স্টেট (ঐচ্ছিক": "State (optional", "শিক্ষা প্রতিষ্ঠান (ঐচ্ছিক": "Institution (optional", "জন্ম তারিখ": "Date of birth", "লিঙ্গ": "Gender", "নির্বাচন করুন": "Select", "পুরুষ": "Male", "মহিলা": "Female", "অন্যান্য": "Other", "কভার রং": "Cover color", "দেশের নাম লিখুন": "Enter the country name", "স্টেটের নাম লিখুন": "Enter the state name", "শিক্ষা প্রতিষ্ঠানের নাম লিখুন": "Enter the institution name", "নিজের সম্পর্কে কিছু লিখুন": "Write something about yourself", "অমুকের পোস্ট": "Someone's post", "জানুয়ারি": "January", "ফেব্রুয়ারি": "February", "মার্চ": "March", "এপ্রিল": "April", "মে": "May", "জুন": "June", "জুলাই": "July", "আগস্ট": "August", "সেপ্টেম্বর": "September", "অক্টোবর": "October", "নভেম্বর": "November", "ডিসেম্বর": "December", "মাস": "Month", "সাল": "Year", "লগইন এরর": "Login error", "রিডাইরেক্ট লগইন এরর": "Redirect login error", "লগইন সম্পন্ন হয়নি, আবার চেষ্টা করুন": "Login was not completed, try again", "এরর: এই ডোমেইন Firebase-এর Authorized domains-এ যোগ করা নেই": "Error: this domain is not added to Firebase Authorized domains", "একাউন্ট মুছে ফেলা হয়েছে": "Account deleted", "আপনার এই একাউন্টটি এডমিন কর্তৃক স্থায়ীভাবে মুছে ফেলা হয়েছে। এই একাউন্ট দিয়ে আর প্রবেশ করা যাবে না": "This account has been permanently deleted by an admin. You cannot sign in with this account again", "একাউন্ট সাসপেন্ড করা হয়েছে": "Account suspended", "আপনার একাউন্টটি সাময়িকভাবে সাসপেন্ড করা হয়েছে": "Your account has been temporarily suspended", "মেয়াদ শেষ হবে": "Expires on", "সেটিংস লোড এরর": "Settings load error", "সেটিংস প্রয়োগ করতে এরর": "Error applying settings", "এ সক্রিয় ছিলেন": "was active at", "কিছুক্ষণ আগে সক্রিয় ছিলেন": "Active a moment ago", "মিনিট আগে সক্রিয় ছিলেন": "Active min ago", "ঘণ্টা আগে সক্রিয় ছিলেন": "Active h ago", "দিন আগে সক্রিয় ছিলেন": "Active d ago", "স্ট্যাটাস লোড এরর": "Status load error", "ডকুমেন্ট পড়তে এরর": "Document read error", "পড়তে এরর": "Read error", "তৈরি/আপডেটে এরর": "Create/update error", "দেশ": "Country", "স্টেট": "State", "শিক্ষা প্রতিষ্ঠান": "Institution", "এর পোস্ট": "'s post", "পোস্ট দেখতে হলে আগে": "To view posts, first", "কে সাবস্ক্রাইব করুন": "— subscribe", "মেসেজ করতে Google দিয়ে লগইন করুন": "Log in with Google to message", "সাবস্ক্রাইবারের তথ্য আনতে এরর": "Error fetching subscriber info", "সাবস্ক্রাইবার তালিকা আনতে এরর": "Error fetching subscriber list", "সাবস্ক্রাইব করতে Google দিয়ে লগইন করুন": "Log in with Google to subscribe", "পাবলিক প্রোফাইল পড়তে এরর": "Error reading public profile", "পোস্ট থেকে প্রোফাইল তথ্য আনতে এরর": "Error fetching profile info from posts", "কোনো পোস্ট পাওয়া যায়নি": "No posts found", "পোস্ট করতে Google দিয়ে লগইন করুন": "Log in with Google to post", "মাই পোস্ট": "My posts", "লগইনের পর প্রোফাইল লোড করতে এরর": "Error loading profile after login", "অতিথি হিসেবে প্রোফাইল লোড এরর": "Error loading profile as guest", "আবার Back চাপুন": "Press Back again", "মেসেজ দেখতে Google দিয়ে লগইন করুন": "Log in with Google to see messages", "মেসেজিং ফিচারটি এই মুহূর্তে এডমিন কর্তৃক বন্ধ রাখা হয়েছে": "The messaging feature is turned off by the admin right now", "কলের অনুমতি ঠিক করুন (মাইক্রোফোন / ক্যামেরা": "Fix call permissions (microphone / camera", "কারো প্রোফাইলে গিয়ে \"মেসেজ করুন\" চাপুন": "Go to someone's profile and tap \"Message\"", "এখনো কোনো মেসেজ নেই। প্রথম মেসেজ পাঠান": "No messages yet. Send the first message", "কলের জন্য অনুমতি দিন": "Allow permissions for calls", "অডিও/ভিডিও কল করতে ও ধরতে মাইক্রোফোন আর ক্যামেরা লাগবে। নিচের বাটনে একবার চাপলে ব্রাউজার অনুমতি চাইবে — শুধু": "Microphone and camera are needed to make and answer audio/video calls. Tap the button below once and you will be asked for permission — only", "চাপুন। একবার দিলে আর বারবার চাইবে না": "Tap. Once allowed, it will not ask again", "মাইক্রোফোন": "Microphone", "ক্যামেরা": "Camera", "অনুমতি ব্লক করা আছে — ব্রাউজার আর নিজে থেকে চাইতে পারবে না। হাতে ঠিক করুন": "Permission is blocked — it can no longer ask by itself. Fix it manually", "১) ঠিকানার বারের বাঁ পাশের আইকনে ট্যাপ করুন": "1) Tap the icon at the left of the address bar", "খুলুন": "Open", "৩) মাইক্রোফোন ও ক্যামেরা": "3) Microphone and camera", "৪) নিচের \"রিলোড\" চাপুন": "4) Tap \"Reload\" below", "রিলোড করুন": "Reload", "সব অনুমতি দিন": "Allow all permissions", "পরে": "Later", "কেটে দিন": "Hang up", "ধরুন": "Answer", "স্পিকার": "Speaker", "ঘোরান": "Flip", "অডিও কল": "Audio call", "ভিডিও কল": "Video call", "ভয়েস মেসেজ": "Voice message", "ফোনের অডিও": "Phone audio", "স্টিকার": "Sticker", "পিছনে": "Back", "সিন": "Seen", "রিলোড": "Reload", "নতুন মেসেজ গণনা": "New message count", "লং-প্রেস": "Long press", "মেসেজ এডিট করা হচ্ছে": "Editing message", "পরিবর্তন করে ➤ চাপুন": "Make changes and tap ➤", "কে রিপ্লাই": "Reply to", "নিজের মেসেজ": "Your message", "রিঅ্যাকশন দেওয়া যায়নি": "Could not react", "কপি করুন": "Copy", "চ্যাট ডিলিট করুন": "Delete chat", "২০ সেপ্টেম্বর": "20 September", "১৬ সেপ্টেম্বর": "16 September", "এখন একটিভ আছে": "Active now", "মেসেজিং সেটিংস লোড এরর": "Messaging settings load error", "নতুন মেসেজ গণনা এরর": "New message count error", "ইনবক্স লোড এরর": "Inbox load error", "কনভারসেশন লোড করা যায়নি। (প্রথমবার হলে Firebase Console-এ ইনডেক্স তৈরি করার একটা লিংক ব্রাউজার কনসোলে (F12) দেখাতে পারে — সেখানে ক্লিক করে ইনডেক্স বানিয়ে নিন": "Could not load conversations. (If this is the first time, a link to create an index in the Firebase Console may appear in the browser console (F12) — click it and create the index", "এডিট করা": "Edited", "কনভারসেশন লোড এরর": "Conversation load error", "পড়া হয়েছে": "Read", "মেসেজ লোড এরর": "Message load error", "মেসেজ লোড করা যায়নি": "Could not load messages", "শোনার এরর": "Listening error", "একটিভ": "Active", "লাস্ট একটিভ": "Last active", "এডিট করা যায়নি — এরর": "Could not edit — error", "মেসেজ পাঠানো যায়নি — এরর": "Could not send message — error", "ভয়েস মেসেজ পাঠানো যায়নি — এরর": "Could not send voice message — error", "কেমন আছেন": "How are you", "ভালো আছি": "I'm fine", "আসসালামু আলাইকুম": "Assalamu Alaikum", "ওয়ালাইকুম আসসালাম": "Wa Alaikum Assalam", "শুভ সকাল": "Good morning", "শুভ রাত্রি": "Good night", "ধন্যবাদ": "Thank you", "দুঃখিত": "Sorry", "অভিনন্দন": "Congratulations", "শুভ জন্মদিন": "Happy birthday", "ঈদ মুবারক": "Eid Mubarak", "আলহামদুলিল্লাহ": "Alhamdulillah", "মাশাআল্লাহ": "MashaAllah", "ইনশাআল্লাহ": "InshaAllah", "দোয়া করবেন": "Please pray for me", "কী খবর": "What's up", "কল দিন": "Give a call", "পরে কথা হবে": "Let's talk later", "একটু অপেক্ষা করুন": "Wait a moment", "খোদা হাফেজ": "Khuda Hafez", "ইমোজি লেখা": "Emoji text", "পাঠানো হচ্ছে": "Sending", "পাঠানো যায়নি — এরর": "Could not send — error", "প্লে": "Play", "সময়": "Time", "ভয়েস মেসেজটি চালানো যায়নি": "Could not play the voice message", "কল রিজেক্ট করা হয়েছে": "Call rejected", "ব্যস্ত আছেন": "Busy", "কল শেষ হয়েছে": "Call ended", "কল বাতিল হয়েছে": "Call cancelled", "কেউ ধরেননি": "No one answered", "মাইক্রোফোন বা ক্যামেরা পাওয়া যায়নি": "Microphone or camera not found", "মাইক্রোফোন/ক্যামেরা চালু করা যায়নি": "Could not turn on microphone/camera", "এই ব্রাউজারে কল সাপোর্ট করে না (HTTPS লাগবে": "Calls are not supported in this browser (HTTPS required", "আনলক": "Unlock", "রিং হচ্ছে": "Ringing", "সংযোগ করা যায়নি": "Could not connect", "আপনার আওয়াজ": "Your sound", "ধরা পড়ছে": "Detected", "নেই (কথা বললে ✓ আসবে": "None (a ✓ will appear when you speak", "যাচ্ছে": "Outgoing", "আসছে": "Incoming", "আপনার মাইক ব্লক হয়ে আছে — অন্য অ্যাপ (Messenger ইত্যাদি) মাইক ধরে রাখলে এমন হয়, সেগুলো বন্ধ করুন": "Your mic is blocked — this happens when another app (Messenger etc.) holds the mic, close those", "সংযোগ দুর্বল": "Weak connection", "সংযোগ বিচ্ছিন্ন হয়েছে": "Disconnected", "কানেক্ট হচ্ছে": "Connecting", "সেট এরর": "Set error", "কল স্ট্যাটাস এরর": "Call status error", "শোনা এরর": "Listening error", "কল দেওয়া হয়েছিল": "Call was made", "ভিডিও": "Video", "কল (রিজেক্ট": "Call (rejected", "কল লগ লেখা যায়নি": "Could not write call log", "রিজেক্ট করা হয়েছে": "Rejected", "ব্যস্ত ছিলেন": "Was busy", "আপনি কেটে দিয়েছেন": "You hung up", "আপনি": "You", "কল দিয়েছিলেন": "You called", "কল": "Call", "আপনি রিজেক্ট করেছেন": "You rejected", "আনমিউট": "Unmute", "স্পিকার চালু": "Speaker on", "আরেকটি কল চলছে": "Another call is in progress", "কল করা হচ্ছে": "Calling", "কল শুরু করা যায়নি": "Could not start the call", "কল করা যায়নি": "Could not make the call", "ইনকামিং কল শোনা যাচ্ছে না (Firestore Rules চেক করুন": "Incoming calls cannot be heard (check Firestore Rules", "ভিডিও কল আসছে": "Video call incoming", "অডিও কল আসছে": "Audio call incoming", "কল ধরা যায়নি": "Could not answer the call", "ক্যামেরা ঘোরানো যায়নি": "Could not flip the camera", "দিয়ে দিতে": "to allow", "দেওয়া আছে": "Allowed", "ব্লক করা": "Blocked", "দেওয়া হয়নি": "Not allowed", "চাপলে জানা যাবে": "Tap to find out", "চালু করতে সমস্যা": "Problem turning on", "নোটিফিকেশন দেখতে Google দিয়ে লগইন করুন": "Log in with Google to see notifications", "নোটিফিকেশন সেটিংস": "Notification settings", "ব্রাউজার নোটিফিকেশন": "Browser notifications", "কোন সেকশনের নোটিফিকেশন দেখতে চান": "Which section's notifications do you want to see", "এই পছন্দ শুধু এই ডিভাইসে প্রযোজ্য। বন্ধ করা সেকশনের নোটিফিকেশন জমা হবে, কিন্তু গণনা ও পপআপে আসবে না": "This choice applies only to this device. Notifications of sections you turn off will be stored but will not appear in counts and popups", "টি নতুন": "new", "মুছুন": "Clear", "অ্যাডমিন": "Admin", "এই সেকশনে এখনো কোনো নোটিফিকেশন নেই": "There are no notifications in this section yet", "টি নোটিফিকেশন মুছে ফেলবেন": "notifications will be deleted", "চালু আছে (ট্যাব লুকানো থাকলে পপআপ আসবে": "On (a popup will appear if the tab is hidden", "ব্রাউজার সেটিংসে বন্ধ করা আছে": "Turned off in browser settings", "এই ব্রাউজারে সাপোর্ট নেই": "Not supported in this browser", "এখনো চালু হয়নি": "Not turned on yet", "লগইন করা যায়নি": "Could not log in", "ঠিকানার বারের বাঁ পাশের আইকনে ট্যাপ করুন": "Tap the icon on the left of the address bar", "মাইক্রোফোন ও ক্যামেরা": "Microphone and camera", "করুন": "", "নিচের \"রিলোড\" চাপুন": "Tap \"Reload\" below"};           // বাংলা -> ইংরেজি (পুরনো মেসেজ UI-এর জন্য)
+  const FC_R = [[/(\d+) ?মিনিট আগে সক্রিয় ছিলেন/,"Active $1 min ago"],[/(\d+) ?ঘণ্টা আগে সক্রিয় ছিলেন/,"Active $1 h ago"],[/(\d+) ?দিন আগে সক্রিয় ছিলেন/,"Active $1 d ago"],[/(\d+) ?মিনিট আগে/,"$1 min ago"],[/(\d+) ?ঘণ্টা আগে/,"$1 h ago"],[/(\d+) ?দিন আগে/,"$1 d ago"],[/(\d+) ?জন/,"$1"],[/(\d+) ?টি নতুন/,"$1 new"]];           // তারিখ/সময়ের প্যাটার্ন
+  const FC_BN = {"Fill Chat": "ফিল চ্যাট", "Menu": "মেনু", "Settings": "সেটিংস", "Log out": "লগ আউট", "Language": "ভাষা", "Theme": "থিম", "Dark": "ডার্ক", "Light": "লাইট", "Back": "ফিরে যান", "← Back": "← ফিরে যান", "Call permissions (microphone / camera)": "কলের অনুমতি (মাইক্রোফোন / ক্যামেরা)", "Blocked for messages": "মেসেজের জন্য ব্লক করা", "No one is blocked.": "কাউকে ব্লক করা হয়নি।", "Unblock": "আনব্লক", "Block user": "ইউজারকে ব্লক করুন", "Unblock user": "ইউজারকে আনব্লক করুন", "🚫 Block user": "🚫 ইউজারকে ব্লক করুন", "✅ Unblock user": "✅ ইউজারকে আনব্লক করুন", "You blocked this person.": "আপনি এই ব্যক্তিকে ব্লক করেছেন।", "✉️ Messages": "✉️ মেসেজ", "🔔 Subscribers": "🔔 সাবস্ক্রাইবার", "✏️ Edit profile": "✏️ প্রোফাইল এডিট করুন", "Active now": "এখন সক্রিয়", "No messages yet.": "এখনো কোনো মেসেজ নেই।", "Open the Subscribers tab to find someone and say hi.": "কাউকে খুঁজে মেসেজ করতে সাবস্ক্রাইবার ট্যাব খুলুন।", "My subscribers": "আমার সাবস্ক্রাইবার", "Search anyone by name": "নাম দিয়ে যে কাউকে খুঁজুন", "No subscribers yet.": "এখনো কেউ সাবস্ক্রাইব করেননি", "Search results": "সার্চ রেজাল্ট", "No one found.": "কাউকে পাওয়া যায়নি।", "Searching...": "খোঁজা হচ্ছে...", "Search isn't available right now.": "এই মুহূর্তে সার্চ করা যাচ্ছে না।", "✉️ Message": "✉️ মেসেজ", "Loading...": "লোড হচ্ছে...", "Block this person? You won't get their messages or calls, and you can't message them until you unblock.": "এই ব্যক্তিকে ব্লক করবেন? তার মেসেজ বা কল আপনার কাছে আসবে না, আর আনব্লক না করা পর্যন্ত আপনি তাকে মেসেজ করতে পারবেন না।", "Blocked.": "ব্লক করা হয়েছে।", "Unblocked.": "আনব্লক করা হয়েছে।", "Could not load the list.": "তালিকা লোড করা যায়নি।", "Log in with Google to use Fill Chat": "Fill Chat ব্যবহার করতে Google দিয়ে লগইন করুন", "🔵 Continue with Google": "🔵 Google দিয়ে চালিয়ে যান", "✅ Mark as Read": "✅ পড়া হয়েছে মার্ক করুন", "More": "আরও"};         // ইংরেজি -> বাংলা (নতুন UI-এর জন্য)
+  const FC_DEFAULT_LANG = 'en';
+  let fcLang = FC_DEFAULT_LANG;
+  try { fcLang = localStorage.getItem('fcLang') || FC_DEFAULT_LANG; } catch (e) {}
+  if (fcLang !== 'en' && fcLang !== 'bn') fcLang = FC_DEFAULT_LANG;
+
+  const FC_BNRE = /[ঀ-৿]+(?:[^ঀ-৿<>]*[ঀ-৿]+)*/g;
+  const FC_HAS_BN = /[ঀ-৿]/;
+  // ইউজারের নিজের লেখা — এগুলোর ভাষা কখনো বদলায় না (মেসেজ, নাম, রিপ্লাই, ক্যাপশন)
+  const FC_UGC = '.msgBubble,.msgQuote,.convName,.convLast,.fcRowName,#fcName,#cpText,#apName,[data-ugc]';
+  function fcDigits(s) { return s.replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d)); }
+  function fcToEn(s) {
+    if (!FC_HAS_BN.test(s)) return s;
+    let o = fcDigits(s);
+    FC_R.forEach(r => { o = o.replace(r[0], r[1]); });
+    return o.replace(FC_BNRE, seg => (FC_D[seg] !== undefined ? FC_D[seg] : seg));
+  }
+  function fcToBn(s) {
+    const k = s.trim();
+    if (!k) return s;
+    if (FC_BN[k] !== undefined) return s.replace(k, FC_BN[k]);
+    return s;
+  }
+  function fcTx(s) { return fcLang === 'bn' ? fcToBn(String(s)) : fcToEn(String(s)); }
+
+  const fcOrig = new WeakMap(), fcShown = new WeakMap();
+  function fcSkip(p) {
+    if (!p) return true;
+    const t = p.nodeName;
+    if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEXTAREA' || t === 'TITLE') return true;
+    if (p.closest && p.closest(FC_UGC)) return true;
+    if (p.id === 'headerTitle' && !headerCenter.classList.contains('inbox')) return true;   // চ্যাটে ওপাশের নাম
+    return false;
+  }
+  function fcXlateNode(n) {
+    if (fcSkip(n.parentElement)) return;
+    const cur = n.nodeValue;
+    if (fcShown.get(n) !== cur) fcOrig.set(n, cur);
+    const o = fcOrig.get(n);
+    if (o == null) return;
+    const t = fcTx(o);
+    if (t !== cur) n.nodeValue = t;
+    fcShown.set(n, t);
+  }
+  const FC_ATTRS = ['placeholder', 'title', 'aria-label'];
+  const fcAttrOrig = new WeakMap();
+  function fcXlateAttrs(el) {
+    if (!el.getAttribute) return;
+    FC_ATTRS.forEach(a => {
+      const v = el.getAttribute(a);
+      if (v == null) return;
+      let rec = fcAttrOrig.get(el); if (!rec) { rec = {}; fcAttrOrig.set(el, rec); }
+      if (!rec[a] || rec[a].shown !== v) rec[a] = { orig: v, shown: v };
+      const t = fcTx(rec[a].orig);
+      if (t !== v) el.setAttribute(a, t);
+      rec[a].shown = t;
+    });
+  }
+  function fcPass(root) {
+    if (!root) return;
+    if (root.nodeType === 3) { fcXlateNode(root); return; }
+    if (root.nodeType !== 1) return;
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let n; while ((n = w.nextNode())) fcXlateNode(n);
+    fcXlateAttrs(root);
+    root.querySelectorAll('[placeholder],[title],[aria-label]').forEach(fcXlateAttrs);
+  }
+  let fcQ = new Set(), fcRaf = 0;
+  function fcQueue(n) { fcQ.add(n); if (!fcRaf) fcRaf = requestAnimationFrame(() => { fcRaf = 0; const q = fcQ; fcQ = new Set(); q.forEach(x => { if (x.isConnected !== false) fcPass(x); }); }); }
+  new MutationObserver(ms => {
+    ms.forEach(m => {
+      if (m.type === 'childList') m.addedNodes.forEach(fcQueue);
+      else if (m.type === 'characterData') fcQueue(m.target);
+      else if (m.type === 'attributes') fcQueue(m.target);
+    });
+  }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: FC_ATTRS });
+  const _fcConfirm = window.confirm.bind(window), _fcAlert = window.alert.bind(window);
+  window.confirm = m => _fcConfirm(fcTx(m));
+  window.alert = m => _fcAlert(fcTx(m));
+  function fcApplyLang() {
+    document.documentElement.lang = fcLang;
+    document.title = 'Fill Chat';
+    fcPass(document.body);
+    document.querySelectorAll('#fcLangSeg [data-l]').forEach(b => b.classList.toggle('on', b.dataset.l === fcLang));
+    const th = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    document.querySelectorAll('#fcThemeSeg [data-m]').forEach(b => b.classList.toggle('on', b.dataset.m === th));
+  }
+  function fcSetLang(l) { fcLang = l; try { localStorage.setItem('fcLang', l); } catch (e) {} fcApplyLang(); if (currentUser) { fcRenderBlockedList(); } }
+  function fcSetTheme(m) {
+    try { localStorage.setItem('fcTheme', m); } catch (e) {}
+    document.documentElement.setAttribute('data-theme', m);
+    fcApplyLang();
+  }
+  document.getElementById('fcLangSeg').addEventListener('click', e => { const b = e.target.closest('[data-l]'); if (b) fcSetLang(b.dataset.l); });
+  document.getElementById('fcThemeSeg').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b) fcSetTheme(b.dataset.m); });
+
+  const fcToastEl = document.getElementById('fcToast');
+  let fcToastT = null;
+  function fcToast(msg) {
+    fcToastEl.textContent = fcTx(msg); fcToastEl.style.display = 'block';
+    clearTimeout(fcToastT); fcToastT = setTimeout(() => { fcToastEl.style.display = 'none'; }, 2200);
+  }
+
+  // ---------- সাইডবার / ফুল-স্ক্রিন সেকশন: প্রতিটায় ব্যাক বাটন; ফোনের ব্যাকও এক ধাপ পেছনে যায় ----------
+  const fcStack = [];
+  function fcShowLayer(id, on) {
+    if (id === 'side') document.body.classList.toggle('fcSideOpen', on);
+    else document.getElementById(id === 'settings' ? 'fcSettings' : 'fcBlocked').classList.toggle('on', on);
+  }
+  function fcOpen(id) {
+    if (fcStack[fcStack.length - 1] === id) return;
+    fcStack.push(id); fcShowLayer(id, true);
+    try { history.pushState(Object.assign({}, history.state || {}, { fc: id }), '', location.href); } catch (e) {}
+    if (id === 'blocked') fcRenderBlockedList();
+    fcApplyLang();
+  }
+  function fcCloseTop() { const id = fcStack.pop(); if (id) fcShowLayer(id, false); return !!id; }
+  function fcBack() { if (!fcStack.length) return; try { history.back(); } catch (e) { fcCloseTop(); } }
+  function fcPopHandled() { return fcCloseTop(); }
+  function fcResetUI() { while (fcStack.length) fcCloseTop(); document.body.classList.remove('fcSideOpen', 'fcBlockedChat'); }
+  document.getElementById('menuBtn').addEventListener('click', () => fcOpen('side'));
+  document.getElementById('fcScrim').addEventListener('click', fcBack);
+  document.getElementById('fcSideBack').addEventListener('click', fcBack);
+  document.querySelectorAll('[data-fcback]').forEach(b => b.addEventListener('click', fcBack));
+  document.getElementById('fcOpenSettings').addEventListener('click', () => fcOpen('settings'));
+  document.getElementById('fcOpenBlocked').addEventListener('click', () => fcOpen('blocked'));
+  document.getElementById('fcOpenPerm').addEventListener('click', () => { openPermSheet(); });
+
+  // ---------- মেসেজ ব্লক (প্রোফাইল ব্লক থেকে আলাদা): ব্লক করা আইডিগুলো জমা থাকে, আনব্লক করা যায় ----------
+  let fcBlocked = new Set();
+  let fcBlockInfo = {};
+  const fcLsKey = () => 'fcMsgBlocked:' + (currentUser ? currentUser.uid : '');
+  function fcIsBlocked(uid) { return !!uid && fcBlocked.has(uid); }
+  function fcSaveLocal() { try { localStorage.setItem(fcLsKey(), JSON.stringify({ uids: Array.from(fcBlocked), info: fcBlockInfo })); } catch (e) {} }
+  async function fcLoadBlocks() {
+    fcBlocked = new Set(); fcBlockInfo = {};
+    try {
+      const l = JSON.parse(localStorage.getItem(fcLsKey()) || 'null');
+      if (l) { (l.uids || []).forEach(u => fcBlocked.add(u)); fcBlockInfo = l.info || {}; }
+    } catch (e) {}
+    try {
+      const s = await getDoc(doc(db, 'messageBlocks', currentUser.uid));
+      if (s.exists()) {
+        const d = s.data();
+        fcBlocked = new Set(d.uids || []); fcBlockInfo = d.info || {};
+        fcSaveLocal();
+      }
+    } catch (e) { /* Firestore rules-এ অনুমতি না থাকলে শুধু ফোনের নিজস্ব স্টোরেজে থাকে */ }
+  }
+  async function fcSaveBlocks() {
+    fcSaveLocal();
+    try {
+      await setDoc(doc(db, 'messageBlocks', currentUser.uid), { uids: Array.from(fcBlocked), info: fcBlockInfo, updatedAt: serverTimestamp() });
+    } catch (e) { console.warn('ব্লক তালিকা Firestore-এ সেভ হয়নি (শুধু এই ডিভাইসে আছে):', e && e.code); }
+  }
+  async function fcBlockUser(uid, name, photo) {
+    if (!uid || uid === currentUser.uid) return;
+    fcBlocked.add(uid); fcBlockInfo[uid] = { name: name || '', photoURL: photo || '' };
+    await fcSaveBlocks();
+    fcToast('Blocked.');
+    if (otherUid === uid) fcOnChat(); else if (!convId) route();
+  }
+  async function fcUnblockUser(uid) {
+    fcBlocked.delete(uid); delete fcBlockInfo[uid];
+    await fcSaveBlocks();
+    fcToast('Unblocked.');
+    fcRenderBlockedList();
+    if (otherUid === uid) fcOnChat(); else if (!convId) route();
+  }
+  function fcOnChat() {
+    document.body.classList.toggle('fcBlockedChat', fcIsBlocked(otherUid));
+    fcApplyLang();
+  }
+  function fcOnInbox() { document.body.classList.remove('fcBlockedChat'); }
+  document.getElementById('blockBannerBtn').addEventListener('click', () => { if (otherUid) fcUnblockUser(otherUid); });
+  function fcAskBlock(uid, name, photo) {
+    if (!confirm("Block this person? You won't get their messages or calls, and you can't message them until you unblock.")) return;
+    fcBlockUser(uid, name, photo);
+  }
+  document.getElementById('chatMoreBtn').addEventListener('click', () => {
+    if (!otherUid) return;
+    const b = fcIsBlocked(otherUid);
+    openCtxMenu(document.getElementById('chatMoreBtn'),
+      '<button class="ctxItem' + (b ? '' : ' danger') + '" data-fcact="toggle">' + (b ? '✅ Unblock user' : '🚫 Block user') + '</button>');
+    fcApplyLang();
+    ctxMenu.querySelector('[data-fcact="toggle"]').addEventListener('click', () => {
+      closeCtxMenu();
+      if (fcIsBlocked(otherUid)) fcUnblockUser(otherUid); else fcAskBlock(otherUid, otherName, otherPhoto);
+    });
+  });
+  function fcRenderBlockedList() {
+    const box = document.getElementById('fcBlockedList');
+    const uids = Array.from(fcBlocked);
+    if (!uids.length) { box.innerHTML = '<div class="fcNote">No one is blocked.</div>'; fcPass(box); return; }
+    box.innerHTML = '';
+    uids.forEach(u => {
+      const inf = fcBlockInfo[u] || {};
+      const row = document.createElement('div'); row.className = 'fcBlkRow';
+      row.innerHTML = avatarHtml(inf.photoURL || '', inf.name || '?', 'md') +
+        '<div class="fcRowName"></div><button type="button">Unblock</button>';
+      row.querySelector('.fcRowName').textContent = inf.name || u;
+      row.querySelector('button').addEventListener('click', () => fcUnblockUser(u));
+      box.appendChild(row);
+      if (!inf.name) getDoc(doc(db, 'publicProfiles', u)).then(s => {
+        if (s.exists()) { const d = s.data(); fcBlockInfo[u] = { name: d.name || '', photoURL: d.photoURL || '' }; fcSaveLocal(); fcRenderBlockedList(); }
+      }).catch(() => {});
+    });
+    fcPass(box);
+  }
+
+  // ---------- প্রোফাইল কার্ড + সাবস্ক্রাইবার + সার্চ ----------
+  let fcSubs = [], fcTab = 'msgs', fcSubsToken = 0, fcSearchToken = 0, fcSearchTimer = null;
+  const fcTabMsgs = document.getElementById('fcTabMsgs'), fcTabSubs = document.getElementById('fcTabSubs');
+  const fcMsgPane = document.getElementById('fcMsgPane'), fcSubsPane = document.getElementById('fcSubsPane');
+  const fcSubsList = document.getElementById('fcSubsList'), fcSubsLoading = document.getElementById('fcSubsLoading'), fcSubsEmpty = document.getElementById('fcSubsEmpty');
+  const fcSearchInput = document.getElementById('fcSearch'), fcSearchList = document.getElementById('fcSearchList'), fcSearchHead = document.getElementById('fcSearchHead');
+  function fcSetTab(t) {
+    fcTab = t;
+    fcTabMsgs.classList.toggle('active', t === 'msgs'); fcTabSubs.classList.toggle('active', t === 'subs');
+    fcMsgPane.style.display = t === 'msgs' ? '' : 'none';
+    fcSubsPane.style.display = t === 'subs' ? 'block' : 'none';
+    if (t === 'subs') fcLoadSubs();
+  }
+  fcTabMsgs.addEventListener('click', () => fcSetTab('msgs'));
+  fcTabSubs.addEventListener('click', () => fcSetTab('subs'));
+  document.getElementById('fcSubsBack').addEventListener('click', () => fcSetTab('msgs'));
+  async function fcLoadProfile() {
+    const u = currentUser; let pub = null;
+    try { const s = await getDoc(doc(db, 'publicProfiles', u.uid)); pub = s.exists() ? s.data() : null; } catch (e) {}
+    fcSubs = Array.from(new Set((pub && pub.subscribers) || [])).filter(x => x && x !== u.uid);
+    const name = (pub && pub.name) || myProfile.name || u.displayName || 'User';
+    const photo = u.photoURL || (pub && pub.photoURL) || myProfile.photoURL || '';
+    document.getElementById('fcAvatar').innerHTML = avatarHtml(photo, name, 'lg');
+    document.getElementById('fcName').textContent = name;
+    document.getElementById('fcSubCount').textContent = String(fcSubs.length);
+  }
+  async function fcInfoOf(uid) {
+    try {
+      const s = await getDoc(doc(db, 'publicProfiles', uid));
+      if (s.exists()) { const d = s.data(); return { uid, name: d.name || 'User', photoURL: d.photoURL || '' }; }
+    } catch (e) {}
+    return { uid, name: 'User', photoURL: '' };
+  }
+  function fcOpenChatWith(info) {
+    const url = location.pathname + '?uid=' + encodeURIComponent(info.uid) + '&name=' + encodeURIComponent(info.name || '') + '&avatar=' + encodeURIComponent(info.photoURL || '');
+    history.pushState({ inApp: true }, '', url);
+    route();
+  }
+  function fcRowFor(info) {
+    const row = document.createElement('div'); row.className = 'fcRow';
+    row.innerHTML = avatarHtml(info.photoURL, info.name, 'md') + '<div class="fcRowName"></div><span class="fcRowGo">✉️ Message</span>';
+    row.querySelector('.fcRowName').textContent = info.name;
+    row.addEventListener('click', () => fcOpenChatWith(info));
+    return row;
+  }
+  async function fcLoadSubs() {
+    const token = ++fcSubsToken;
+    fcSearchInput.value = ''; fcSearchList.innerHTML = ''; fcSearchHead.style.display = 'none';
+    fcSubsList.style.display = ''; fcSubsList.innerHTML = '';
+    fcSubsEmpty.style.display = 'none'; fcSubsLoading.style.display = 'block';
+    try { const s = await getDoc(doc(db, 'publicProfiles', currentUser.uid)); if (s.exists()) fcSubs = Array.from(new Set(s.data().subscribers || [])).filter(x => x && x !== currentUser.uid); } catch (e) {}
+    document.getElementById('fcSubCount').textContent = String(fcSubs.length);
+    if (!fcSubs.length) { if (token !== fcSubsToken) return; fcSubsLoading.style.display = 'none'; fcSubsEmpty.style.display = 'block'; fcApplyLang(); return; }
+    const infos = await Promise.all(fcSubs.map(fcInfoOf));
+    if (token !== fcSubsToken) return;
+    fcSubsLoading.style.display = 'none';
+    infos.forEach(inf => fcSubsList.appendChild(fcRowFor(inf)));
+    fcApplyLang();
+  }
+  async function fcDoSearch(q) {
+    const token = ++fcSearchToken;
+    fcSearchList.innerHTML = '<div class="fcNote">Searching...</div>'; fcSearchHead.style.display = 'block'; fcSubsList.style.display = 'none'; fcSubsEmpty.style.display = 'none';
+    fcApplyLang();
+    const variants = Array.from(new Set([q, q.charAt(0).toUpperCase() + q.slice(1), q.toLowerCase(), q.toUpperCase()]));
+    const found = new Map();
+    try {
+      await Promise.all(variants.map(async v => {
+        const s = await getDocs(query(collection(db, 'publicProfiles'), where('name', '>=', v), where('name', '<=', v + ''), limit(10)));
+        s.forEach(d => { if (d.id !== currentUser.uid) found.set(d.id, { uid: d.id, name: d.data().name || 'User', photoURL: d.data().photoURL || '' }); });
+      }));
+    } catch (e) {
+      if (token !== fcSearchToken) return;
+      console.error('সার্চ এরর (Firestore Rules-এ publicProfiles list অনুমতি লাগতে পারে):', e);
+      fcSearchList.innerHTML = '<div class="fcNote">Search isn\'t available right now.</div>'; fcApplyLang(); return;
+    }
+    if (token !== fcSearchToken) return;
+    fcSearchList.innerHTML = '';
+    if (!found.size) { fcSearchList.innerHTML = '<div class="fcNote">No one found.</div>'; fcApplyLang(); return; }
+    found.forEach(inf => fcSearchList.appendChild(fcRowFor(inf)));
+    fcApplyLang();
+  }
+  fcSearchInput.addEventListener('input', () => {
+    clearTimeout(fcSearchTimer);
+    const q = fcSearchInput.value.trim();
+    if (q.length < 2) {
+      fcSearchToken++; fcSearchList.innerHTML = ''; fcSearchHead.style.display = 'none'; fcSubsList.style.display = '';
+      fcSubsEmpty.style.display = (!fcSubs.length && !fcSubsLoading.style.display.includes('block')) ? 'block' : 'none';
+      return;
+    }
+    fcSearchTimer = setTimeout(() => fcDoSearch(q), 400);
+  });
+  function fcInitApp() { fcLoadProfile(); fcApplyLang(); }
+  fcApplyLang();
+
+  // শুরুতে লগইন স্ক্রিন না দেখিয়ে লোডিং দেখানো হয় — Firebase সেশন ফিরিয়ে আনলে সরাসরি চ্যাট খোলে
+  onAuthStateChanged(auth, async (user) => {
+    stopInbox();
+    stopChat();
+    stopPresence();
+    stopIncomingListener();
+    dismissIncoming();
+    finishCall('কল শেষ হয়েছে');
+    routeToken++;
+    if (!user) {
+      currentUser = null;
+      fcResetUI();
+      loginBtn.disabled = false;
+      loginStatus.textContent = '';
+      showOnly('login');
+      return;
+    }
+    try {
+      const blocked = await checkAccountBlocked(user);
+      if (blocked) return;
+
+      currentUser = user;
+      await Promise.all([ensureUserProfile(user), loadMessagingSettings()]);
+      await fcLoadBlocks();
+
+      showOnly('app');
+      fcInitApp();
+      startPresence();
+      startIncomingListener();
+      await route();
+      maybeAskPermissions();
+    } catch (err) {
+      console.error('চালু করতে সমস্যা:', err);
+      loginStatus.textContent = 'এরর: ' + (err && err.message ? err.message : String(err));
+      showOnly('login');
+    }
+  });
+</script>
+
+</body>
+</html>
