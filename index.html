@@ -56,7 +56,8 @@ body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--te
 #headerCenter{display:flex;align-items:center;gap:10px;max-width:calc(100% - 190px);min-width:0}
 #headerText{min-width:0;text-align:left}
 #headerAvatar{display:none;overflow:visible;position:relative;background:none}
-#headerAvatar.online::after{content:'';position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid var(--bg-color);z-index:2}
+#headerAvatar{overflow:visible}#headerAvatar img{border-radius:50%}
+#headerAvatar.online::after{content:'';position:absolute;right:-2px;bottom:-2px;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid var(--bg-color);z-index:2}
 #headerStatus{font-size:11px;color:var(--text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;display:none}
 #headerStatus.active{color:var(--text-color)}
 #headerCenter.inbox #headerText{text-align:center}
@@ -64,6 +65,7 @@ body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--te
 .av{position:relative;border-radius:50%;overflow:hidden;background:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .avFallback{font-weight:bold;color:var(--text-color)}
+.avWrap{position:relative;flex-shrink:0;display:flex}.avDot{display:none;position:absolute;right:0;bottom:0;width:13px;height:13px;border-radius:50%;background:#22c55e;border:2px solid var(--bg-color);z-index:2}.avWrap.online .avDot{display:block}
 .av.sm{width:34px;height:34px}.av.sm .avFallback{font-size:14px}
 .av.hd{width:38px;height:38px}.av.hd .avFallback{font-size:15px}
 .av.md{width:48px;height:48px}.av.md .avFallback{font-size:18px}
@@ -986,8 +988,8 @@ body.fcSideOpen #fcSide{transform:none}
   function openInboxMenu(anchorEl, convIdTarget) {
     const html =
       '<button class="ctxItem" data-act="read">✅ Mark as Read</button>' +
-      '<button class="ctxItem danger" data-act="delete">🗑️ চ্যাট ডিলিট করুন</button>' +
-      '<button class="ctxItem danger" data-act="block">🚫 Block user</button>';
+      '<button class="ctxItem danger" data-act="block">🚫 Block user</button>' +
+      '<button class="ctxItem danger" data-act="delete">🗑️ চ্যাট ডিলিট করুন</button>';
     openCtxMenu(anchorEl, html);
     fcApplyLang();
     ctxMenu.querySelectorAll('.ctxItem').forEach(b => b.addEventListener('click', async () => {
@@ -1063,6 +1065,14 @@ body.fcSideOpen #fcSide{transform:none}
   // ---------- অনলাইন / লাস্ট একটিভ (presence) ----------
   // নিজের presence/{uid} ডকুমেন্টে lastActive + online লেখা হয়; অন্যজনের presence ডকুমেন্ট শুনে হেডারে দেখানো হয়
   const ACTIVE_WINDOW_MS = 100000;
+  const fcPres = {};
+  function fcApplyDots() {
+    document.querySelectorAll('.avWrap[data-ou]').forEach(w => {
+      const x = fcPres[w.dataset.ou];
+      w.classList.toggle('online', !!(x && x.online && Date.now() - x.t < ACTIVE_WINDOW_MS));
+    });
+  }
+  setInterval(fcApplyDots, 30000);
   let presenceTimer = null;
   function writePresence(online) {
     if (!currentUser) return Promise.resolve();
@@ -1182,7 +1192,7 @@ body.fcSideOpen #fcSide{transform:none}
         const row = document.createElement('div');
         row.className = 'convRow' + (isUnread ? ' unread' : '');
         row.innerHTML = `
-          ${avatarHtml(photo, name, 'md')}
+          <div class="avWrap" data-ou="${escapeHtml(otherU)}">${avatarHtml(photo, name, 'md')}<span class="avDot"></span></div>
           <div class="convBody">
             <div class="convTop">
               <div class="convName">${escapeHtml(name)}</div>
@@ -1203,6 +1213,11 @@ body.fcSideOpen #fcSide{transform:none}
             if (n > 0 && slot) slot.innerHTML = '<div class="unreadBadge">' + (n > 99 ? bn(99) + '+' : bn(n)) + '</div>';
           }, err => console.error('নতুন মেসেজ গণনা এরর:', err)));
         }
+        unreadUnsubs.push(onSnapshot(doc(db, "presence", otherU), ps => {
+          const pd = ps.exists() ? ps.data() : {};
+          fcPres[otherU] = { online: pd.online === true, t: pd.lastActive && pd.lastActive.toMillis ? pd.lastActive.toMillis() : 0 };
+          fcApplyDots();
+        }, () => {}));
         bindLongPress(row, () => openInboxMenu(row, d.id));
         row.addEventListener('click', () => {
           if (lpConsumed()) return;   // লং-প্রেসের পরে ছাড়ার সময় যেন ভুল করে চ্যাট খুলে না যায়
