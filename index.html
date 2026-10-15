@@ -574,6 +574,23 @@ body.fcSideOpen #fcSide{transform:none}
   <!-- ---------- লং-প্রেস কনটেক্সট মেনু (মেসেজ ও ইনবক্স রো — দুই জায়গাতেই ব্যবহৃত হয়) ---------- -->
   <div id="ctxBackdrop"><div id="ctxMenu"></div></div>
 
+<script>
+(function(){
+  try {
+    var cap = window.Capacitor;
+    if (!cap || !cap.isNativePlatform || !cap.isNativePlatform()) return;
+    var A = cap.Plugins && cap.Plugins.App;
+    if (!A) return;
+    A.addListener('backButton', function(){
+      var st = history.state;
+      if (st && (st.inApp || st.ctx || st.viewer || st.composer || st.fc)) { history.back(); return; }
+      var bb = document.getElementById('backBtn');
+      if (bb && bb.offsetParent !== null && getComputedStyle(bb).visibility !== 'hidden') { bb.click(); return; }
+      A.exitApp();
+    });
+  } catch (e) {}
+})();
+</script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import {
@@ -609,6 +626,13 @@ body.fcSideOpen #fcSide{transform:none}
     try { localStorage.setItem('onuvutiTheme', __theme); } catch (e) {}
   });
   const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  async function nativeSignOut() {
+    try {
+      const c = window.Capacitor;
+      if (c && c.isNativePlatform && c.isNativePlatform()) await c.Plugins.FirebaseAuthentication.signOut();
+    } catch (e) {}
+  }
 
   // ---------- মোবাইলে ঠিকানার বক্স/টুলবারের কারণে 100vh আসল স্ক্রিনের চেয়ে বড় হয়ে যাওয়ার
   // সমস্যা এড়াতে — window.innerHeight দিয়ে সরাসরি আসল দৃশ্যমান উচ্চতা মেপে বসানো হচ্ছে।
@@ -716,6 +740,7 @@ body.fcSideOpen #fcSide{transform:none}
     hangup();
     try { await writePresence(false); } catch (e) {}
     await signOut(auth);
+    await nativeSignOut();
   });
   blockedBackBtn.addEventListener('click', () => { showOnly('login'); });
 
@@ -745,7 +770,7 @@ body.fcSideOpen #fcSide{transform:none}
   // ---------- একাউন্ট ডিলিট/সাসপেন্ড চেক — profile.html এর মতোই একই লজিক ----------
   async function checkAccountBlocked(user) {
     try {
-      const banSnap = await getDoc(doc(db, "bannedUsers", user.uid));
+      const [banSnap, userSnap] = await Promise.all([getDoc(doc(db, "bannedUsers", user.uid)), getDoc(doc(db, "users", user.uid))]);
       if (banSnap.exists()) {
         await signOut(auth);
         blockedTitle.textContent = '⛔ একাউন্ট মুছে ফেলা হয়েছে';
@@ -753,7 +778,6 @@ body.fcSideOpen #fcSide{transform:none}
         showOnly('blocked');
         return true;
       }
-      const userSnap = await getDoc(doc(db, "users", user.uid));
       const data = userSnap.exists() ? userSnap.data() : null;
       const susp = data && data.suspended;
       if (susp && susp.active && susp.until) {
@@ -3309,8 +3333,7 @@ body.fcSideOpen #fcSide{transform:none}
       if (blocked) return;
 
       currentUser = user;
-      await Promise.all([ensureUserProfile(user), loadMessagingSettings()]);
-      await fcLoadBlocks();
+      await Promise.all([ensureUserProfile(user), loadMessagingSettings(), fcLoadBlocks()]);
 
       showOnly('app');
       fcInitApp();
