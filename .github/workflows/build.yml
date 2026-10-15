@@ -93,4 +93,7 @@ jobs:
             adb shell monkey -p com.feelchat.app -c android.intent.category.LAUNCHER 1
             sleep 20
             adb shell pidof com.feelchat.app || echo APP_NOT_RUNNING
-            adb logcat -d | grep -E "FATAL EXCEPTION|Caused by|AndroidRuntime" -A 12 | head -60
+            echo ==== CRASH BUFFER ====
+            adb logcat -b crash -d | head -70
+            echo ==== APP LOG ====
+            adb logcat -d | grep -E "feelchat|Capacitor|FirebaseApp|FATAL" | head -60
