@@ -31,6 +31,10 @@ jobs:
       - run: npx cap add android
       - name: Google services
         run: cp google-services.json android/app/google-services.json
+      - name: Enable Google sign-in in plugin
+        run: |
+          sed -i 's/^ext {/ext {\n    rgcfaIncludeGoogle = true/' android/variables.gradle
+          cat android/variables.gradle
       - name: Permissions
         run: |
           M=android/app/src/main/AndroidManifest.xml
