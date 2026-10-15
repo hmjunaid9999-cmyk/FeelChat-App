@@ -577,7 +577,7 @@ body.fcSideOpen #fcSide{transform:none}
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import {
-    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+    getAuth, GoogleAuthProvider, signInWithPopup, signInWithCredential, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
   import {
     getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, collection, query, where, orderBy,
@@ -697,7 +697,16 @@ body.fcSideOpen #fcSide{transform:none}
   loginBtn.addEventListener('click', async () => {
     loginBtn.disabled = true;
     loginStatus.textContent = 'লগইন হচ্ছে...';
-    try { await signInWithPopup(auth, provider); }
+    try {
+      const __cap = window.Capacitor;
+      if (__cap && __cap.isNativePlatform && __cap.isNativePlatform()) {
+        const __r = await __cap.Plugins.FirebaseAuthentication.signInWithGoogle();
+        const __cred = GoogleAuthProvider.credential(__r.credential.idToken);
+        await signInWithCredential(auth, __cred);
+      } else {
+        await signInWithPopup(auth, provider);
+      }
+    }
     catch (e) {
       loginStatus.textContent = 'এরর: ' + (e && e.message ? e.message : String(e));
       loginBtn.disabled = false;
