@@ -22,6 +22,7 @@ jobs:
         run: |
           MAJOR=$(node -p "require('./node_modules/@capacitor/core/package.json').version.split('.')[0]")
           npm install @capacitor-firebase/authentication@^$MAJOR firebase
+          npm ls @capacitor/core @capacitor-firebase/authentication || true
           node -e "const fs=require('fs');const c=JSON.parse(fs.readFileSync('capacitor.config.json'));c.plugins=c.plugins||{};c.plugins.FirebaseAuthentication={skipNativeAuth:true,providers:['google.com']};fs.writeFileSync('capacitor.config.json',JSON.stringify(c,null,2));"
       - name: Web files
         run: |
@@ -74,3 +75,22 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "v${{ github.run_number }}" FeelChat.apk --title "Feel Chat v${{ github.run_number }}" --notes "Feel Chat"
+      - name: Enable KVM
+        continue-on-error: true
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Test launch on emulator
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          arch: x86_64
+          script: |
+            adb install -r FeelChat.apk
+            adb logcat -c
+            adb shell monkey -p com.feelchat.app -c android.intent.category.LAUNCHER 1
+            sleep 20
+            adb shell pidof com.feelchat.app || echo APP_NOT_RUNNING
+            adb logcat -d | grep -E "FATAL EXCEPTION|Caused by|AndroidRuntime" -A 12 | head -60
