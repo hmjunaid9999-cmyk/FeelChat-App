@@ -24,7 +24,7 @@ document.addEventListener("click",function(e){if(e.defaultPrevented||e.metaKey||
 <meta charset="UTF-8">
 <script>try{var __t=localStorage.getItem("fcTheme")||localStorage.getItem("onuvutiTheme");if(__t==="light"||__t==="dark")document.documentElement.setAttribute("data-theme",__t);}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin><link rel="dns-prefetch" href="https://www.gstatic.com">
-<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js" crossorigin><title>Feel Chat</title>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js" crossorigin><title>Feel Chat</title><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--primary-color:#ffffff;--bg-color:#000000;--card-color:#000000;--text-color:#ffffff;--surface:#000000;--line:rgba(255,255,255,0.3);--line2:rgba(255,255,255,0.3);--surface-active:rgba(255,255,255,0.18);--text-muted:#ffffff;--text-soft:#ffffff;--text-comment:#ffffff;--notice-bg:#000000;--reply-bg:#000000;--avatar-bg:#000000;--danger-color:#ffffff;--success-color:#ffffff;--notice-color:#ffffff;;--max-width:640px}html[data-theme="light"]{color-scheme:light;--primary-color:#000000;--bg-color:#ffffff;--card-color:#ffffff;--text-color:#000000;--surface:#ffffff;--line:rgba(0,0,0,0.3);--line2:rgba(0,0,0,0.3);--surface-active:rgba(0,0,0,0.12);--text-muted:#000000;--text-soft:#000000;--text-comment:#000000;--notice-bg:#ffffff;--reply-bg:#ffffff;--avatar-bg:#ffffff;--danger-color:#000000;--success-color:#000000;--notice-color:#000000}
@@ -51,6 +51,7 @@ body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--te
 #backBtn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-color);font-size:20px;cursor:pointer;padding:4px 8px}
 #logoutBtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:var(--surface);color:var(--text-color);border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}
 #bootScreen{display:flex;align-items:center;justify-content:center;position:fixed;inset:0;z-index:800;background:var(--bg-color,#000);color:var(--text-color,#fff);font-size:15px}
+#bootScreen{background:var(--bg-color,#000) url(icon-192.png) center/96px 96px no-repeat;font-size:0;color:transparent}
 #bootScreen .spin{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--primary-color);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #headerCenter{display:flex;align-items:center;gap:10px;max-width:calc(100% - 190px);min-width:0}
@@ -379,10 +380,10 @@ body.fcSideOpen #fcSide{transform:none}
 <div id="ptr" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg></div>
 <div id="reactPop"></div>
 
-  <div id="bootScreen">লোড হচ্ছে...</div>
+  <div id="bootScreen" aria-label="Feel Chat"></div>
 
   <div id="loginScreen">
-    <img src="https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png" alt="Onuvuti">
+    <img src="icon-192.png" alt="Feel Chat" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 96 96%27%3E%3Crect width=%2796%27 height=%2796%27 rx=%2722%27 fill=%27%231877f2%27/%3E%3Cpath d=%27M24 30h48v28H44l-12 10V58h-8z%27 fill=%27%23fff%27/%3E%3C/svg%3E'">
     <h1>Feel Chat</h1>
     <p>Log in with Google to use Feel Chat</p>
     <button id="googleLoginBtn">🔵 Continue with Google</button>
@@ -1179,6 +1180,44 @@ body.fcSideOpen #fcSide{transform:none}
   }
 
   // ================= ইনবক্স মোড =================
+  // ইনবক্সের শেষ অবস্থা ফোনে সেভ থাকে — পরের বার খুললেই সঙ্গে সঙ্গে দেখায়, তারপর সার্ভার থেকে আপডেট হয়
+  const fcInboxKey = () => 'fcInboxCache:' + (currentUser ? currentUser.uid : (localStorage.getItem('fcAuthed') || ''));
+  function fcInboxCacheSave(snap) {
+    try {
+      const out = [];
+      snap.forEach(d => {
+        const c = d.data();
+        const o = (c.participants || []).find(u => u !== currentUser.uid);
+        if (!o || fcIsBlocked(o)) return;
+        const info = (c.participantInfo && c.participantInfo[o]) || {};
+        out.push({ u: o, n: info.name || '', p: info.photoURL || '', l: c.lastMessage || '', t: c.lastMessageAt && c.lastMessageAt.toMillis ? c.lastMessageAt.toMillis() : 0 });
+      });
+      localStorage.setItem(fcInboxKey(), JSON.stringify(out.slice(0, 40)));
+    } catch (e) {}
+  }
+  function fcInboxCacheShow() {
+    try {
+      const arr = JSON.parse(localStorage.getItem(fcInboxKey()) || 'null');
+      if (!arr || !arr.length) return;
+      const frag = document.createDocumentFragment();
+      arr.forEach(c => {
+        if (fcIsBlocked(c.u)) return;
+        const row = document.createElement('div');
+        row.className = 'convRow';
+        row.innerHTML = '<div class="avWrap">' + avatarHtml(c.p, c.n || 'ব্যবহারকারী', 'md') + '<span class="avDot"></span></div><div class="convBody"><div class="convTop"><div class="convName">' + escapeHtml(c.n || 'ব্যবহারকারী') + '</div><div class="convTime"></div></div><div class="convLast">' + escapeHtml(c.l) + '</div></div>';
+        row.addEventListener('click', () => {
+          if (!currentUser) return;
+          history.pushState({ inApp: true }, '', location.pathname + '?uid=' + encodeURIComponent(c.u) + '&name=' + encodeURIComponent(c.n) + '&avatar=' + encodeURIComponent(c.p));
+          route();
+        });
+        frag.appendChild(row);
+      });
+      if (!frag.children.length) return;
+      convList.innerHTML = ''; convList.appendChild(frag);
+      inboxLoading.style.display = 'none';
+    } catch (e) {}
+  }
+
   function startInbox() {
     headerCenter.classList.add('inbox');
     fcOnInbox();
@@ -1200,6 +1239,7 @@ body.fcSideOpen #fcSide{transform:none}
       orderBy("lastMessageAt", "desc")
     );
 
+    fcInboxCacheShow();
     unsubInbox = onSnapshot(q, snap => {
       clearUnreadListeners();
       inboxLoading.style.display = 'none';
@@ -1265,6 +1305,7 @@ body.fcSideOpen #fcSide{transform:none}
       convList.innerHTML = '';
       convList.appendChild(frag);
       inboxEmpty.style.display = convList.children.length ? 'none' : 'block';
+      fcInboxCacheSave(snap);
       fcApplyLang();
     }, err => {
       console.error('ইনবক্স লোড এরর:', err);
@@ -3239,6 +3280,7 @@ body.fcSideOpen #fcSide{transform:none}
     document.getElementById('fcAvatar').innerHTML = avatarHtml(photo, name, 'lg');
     document.getElementById('fcName').textContent = name;
     document.getElementById('fcSubCount').textContent = String(fcSubs.length);
+    try { localStorage.setItem('fcProfCache:' + u.uid, JSON.stringify({ name, photo, subs: fcSubs.length })); } catch (e) {}
   }
   async function fcInfoOf(uid) {
     try {
@@ -3308,8 +3350,31 @@ body.fcSideOpen #fcSide{transform:none}
     }
     fcSearchTimer = setTimeout(() => fcDoSearch(q), 400);
   });
-  function fcInitApp() { fcLoadProfile(); fcApplyLang(); }
+  function fcShowCachedProfile() {
+    try {
+      const uid = currentUser ? currentUser.uid : localStorage.getItem('fcAuthed');
+      const c = JSON.parse(localStorage.getItem('fcProfCache:' + uid) || 'null');
+      if (!c) return;
+      document.getElementById('fcAvatar').innerHTML = avatarHtml(c.photo, c.name, 'lg');
+      document.getElementById('fcName').textContent = c.name;
+      document.getElementById('fcSubCount').textContent = String(c.subs || 0);
+    } catch (e) {}
+  }
+  function fcInitApp() { fcShowCachedProfile(); fcLoadProfile(); fcApplyLang(); }
   fcApplyLang();
+
+  // আগে লগইন করা থাকলে: লোগো স্প্ল্যাশের জায়গায় সঙ্গে সঙ্গে অ্যাপ স্ক্রিন + সেভ করা ইনবক্স/প্রোফাইল দেখানো হয়
+  let fcEarlyShown = false;
+  try {
+    if (localStorage.getItem('fcAuthed') && !new URLSearchParams(__loc.search).get('uid')) {
+      fcEarlyShown = true;
+      showOnly('app');
+      fcShowCachedProfile();
+      headerTitle.textContent = 'Feel Chat';
+      inboxView.style.display = 'block'; chatView.style.display = 'none';
+      fcInboxCacheShow();
+    }
+  } catch (e) {}
 
   // শুরুতে লগইন স্ক্রিন না দেখিয়ে লোডিং দেখানো হয় — Firebase সেশন ফিরিয়ে আনলে সরাসরি চ্যাট খোলে
   onAuthStateChanged(auth, async (user) => {
@@ -3322,6 +3387,7 @@ body.fcSideOpen #fcSide{transform:none}
     routeToken++;
     if (!user) {
       currentUser = null;
+      try { localStorage.removeItem('fcAuthed'); } catch (e) {}
       fcResetUI();
       loginBtn.disabled = false;
       loginStatus.textContent = '';
@@ -3329,17 +3395,25 @@ body.fcSideOpen #fcSide{transform:none}
       return;
     }
     try {
-      const blocked = await checkAccountBlocked(user);
-      if (blocked) return;
-
       currentUser = user;
-      await Promise.all([ensureUserProfile(user), loadMessagingSettings(), fcLoadBlocks()]);
-
-      showOnly('app');
+      try { localStorage.setItem('fcAuthed', user.uid); } catch (e) {}
+      // সব একসাথে শুরু — একটার জন্য আরেকটা অপেক্ষা করে না
+      const blockedP = checkAccountBlocked(user);
+      const profileP = ensureUserProfile(user).catch(e => console.error('প্রোফাইল এরর:', e));
+      const settingsP = loadMessagingSettings();
+      const blocksP = fcLoadBlocks();
+      const blocksBefore = Array.from(fcBlocked).sort().join(',');   // ফোনের সেভ করা ব্লক লিস্ট সঙ্গে সঙ্গে লোড হয়ে গেছে
+      if (!fcEarlyShown) { showOnly('app'); }
       fcInitApp();
       startPresence();
       startIncomingListener();
-      await route();
+      const routeP = route();
+      const blocked = await blockedP;
+      if (blocked) { stopInbox(); stopChat(); stopPresence(); stopIncomingListener(); currentUser = null; try { localStorage.removeItem('fcAuthed'); } catch (e) {} return; }
+      await Promise.all([profileP, settingsP, blocksP]);
+      await routeP;
+      // সার্ভারের ব্লক লিস্ট আলাদা হলে ইনবক্স আবার আঁকা হয়
+      if (blocksBefore !== Array.from(fcBlocked).sort().join(',') && currentUser === user) route();
       maybeAskPermissions();
     } catch (err) {
       console.error('চালু করতে সমস্যা:', err);
