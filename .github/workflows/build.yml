@@ -18,11 +18,18 @@ jobs:
           distribution: temurin
           java-version: 17
       - run: npm install
+      - name: Firebase login plugin
+        run: |
+          MAJOR=$(node -p "require('./node_modules/@capacitor/core/package.json').version.split('.')[0]")
+          npm install @capacitor-firebase/authentication@^$MAJOR firebase
+          node -e "const fs=require('fs');const c=JSON.parse(fs.readFileSync('capacitor.config.json'));c.plugins=c.plugins||{};c.plugins.FirebaseAuthentication={skipNativeAuth:true,providers:['google.com']};fs.writeFileSync('capacitor.config.json',JSON.stringify(c,null,2));"
       - name: Web files
         run: |
           mkdir www
           cp index.html icon-192.png icon-512.png www/
       - run: npx cap add android
+      - name: Google services
+        run: cp google-services.json android/app/google-services.json
       - name: Permissions
         run: |
           M=android/app/src/main/AndroidManifest.xml
