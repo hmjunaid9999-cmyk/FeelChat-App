@@ -52,11 +52,16 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease
       - name: Sign
+        env:
+          KS_B64: ${{ secrets.KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
+          echo "$KS_B64" | base64 -d > keystore.jks
           BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
           U=android/app/build/outputs/apk/release/app-release-unsigned.apk
           $BT/zipalign -p 4 $U aligned.apk
-          $BT/apksigner sign --ks keystore.jks --ks-pass pass:feelchat123 --key-pass pass:feelchat123 --ks-key-alias feelchat --out FeelChat.apk aligned.apk
+          $BT/apksigner sign --ks keystore.jks --ks-pass env:KS_PASS --key-pass env:KS_PASS --ks-key-alias feelchat --out FeelChat.apk aligned.apk
+          rm keystore.jks
       - name: Release
         env:
           GH_TOKEN: ${{ github.token }}
